@@ -7,7 +7,6 @@
 【配布元】　　　https://github.com/ryechat/ImageViewer
 【転載の可否】　可
 【登 録 名】　　Stella Vista v1.0.exe
-【圧縮形式】　　RyeImageViewer.zip
 【動作環境】　　Windows XP, Vista以降
 【開発環境】　　Visual Studio 2015, Windows10
 
