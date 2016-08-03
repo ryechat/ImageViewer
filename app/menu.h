@@ -1,11 +1,12 @@
+/*!
+    @file Class definition of CImageViewer::ContextMenu.
+    That class provides the application the way to manage
+    context menu item's status.
+*/
 #pragma once
 #ifndef GUID_56ED3B352A5D42EBA6E9E85670749C89
 #define GUID_56ED3B352A5D42EBA6E9E85670749C89
-#ifndef STDAFX
-#include <vector>
-#endif
 #include "image_viewer.h"
-#include "popup_menu.h"
 
 namespace image_viewer {
 
@@ -14,55 +15,50 @@ enum class ID : int;
 //! Menu Controls
 class CImageViewer::ContextMenu {
 public:
-	ContextMenu(CImageViewer &parent_) : parent(parent_) {}
-	~ContextMenu() = default;
+    ContextMenu(CImageViewer &parent_);
+	~ContextMenu();
 
+    /*! メニュー状態を復元し、アプリケーション設定に反映する.
+        ウィンドウを生成してから呼び出すこと。
+    */
 	void initialize();
-	void saveSettings() { access(true); }
+
+    //! メニュー項目の状態を設定ファイルに保存する
+    void saveSettings();
  
-	/*! Synchronize its status with a selected item.
-		It disables buttons such as "next file" that would be unsuitable
-		if the item was a last file in the directory.
-	*/
+	//! アプリケーションの状態に合わせてメニュー項目の有効/無効を切り替える
 	bool updateStatus();
 
-	/*! Changes status of a selected item.
-		If the menu item specified by id was a button,
-		this function will invert selected and unselected.
-		If the menu item was radio button that was tied up with other items
-		by calling makeRadioButton() function, the item specified as a
-		parameter will be selected, and other tied-up item will be cleared.
+	/*! 項目のチェック状態を反転する.
+        ラジオボタンの場合はONになり、グループ内の他のラジオボタンがOFFになる
 	*/
 	bool changeStatus(ID id);
 
-	/*! Shows the context menu.
-		This function will block the flow of the thread while menu is shown.
-		If an item was selected by user, this function will post message
-		to the parent window before returning selected ID.
-		If menu was closed without any item selected, return value is 0.
-	*/
+	//! メニューを表示し、ユーザの選択を返す。キャンセルは0。
 	int track(basis::Point pt) const;
 
-	int getSortWay();
+    //! 選択されているソート条件を返す
+	ID getSortWay();
 
-	void disable(ID id) { m_menu.disable(static_cast<int>(id)); }
-	void enable(ID id) { m_menu.enable(static_cast<int>(id)); }
+    //! 項目を有効化する
+    void enable(ID id);
 
-	void select(ID id) { m_menu.select(static_cast<int>(id)); }
-	bool isSelected(ID id) { return m_menu.isSelected(static_cast<int>(id)); }
-	void clear(ID id) { m_menu.clear(static_cast<int>(id)); }
+    //! 項目を無効化する
+    void disable(ID id);
+
+    //! 項目をチェック状態にする
+    void select(ID id);
+
+    //! 項目がチェック状態かどうか
+    bool isSelected(ID id);
+
+    //! 項目のチェック状態を解除
+    void clear(ID id);
 
 private:
-	void create();
-	void makeRadioButton(ID first, ID last) { m_radio.emplace_back(first, last); }
-	std::pair<int, int> isRadioButton(ID id);
-
-	CImageViewer &parent;
-	basis::CPopupMenu m_menu;
-	void access(bool bSave);
-	std::basic_string<TCHAR> getAcceleratorString(ID id);
-
-	std::vector<std::pair<ID, ID>> m_radio;
+    CImageViewer& parent;
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 }  // namespace

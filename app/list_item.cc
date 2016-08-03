@@ -1,14 +1,36 @@
 #include "imemory.h"
+#include "cdd_bitmap.h"
+#include "file_path.h"
 #include "file_item.h"
 #include "list_item.h"
 
 namespace image_viewer {
 
+class CListItem::Impl {
+public:
+    Impl(const WIN32_FIND_DATA &fd) : m_fileName(fd.cFileName),
+        m_access(fd.ftLastAccessTime), m_create(fd.ftCreationTime),
+        m_write(fd.ftLastWriteTime), m_type(TYPE::Undefined)
+    {}
+
+	using TYPE = basis::CDDBitmap::TYPE;
+	TYPE m_type;
+	basis::Surface m_image;
+	std::basic_string<TCHAR> m_fileName;
+	FILETIME  m_access;
+	FILETIME  m_create;
+	FILETIME  m_write;
+};
+
+
+
 CListItem::CListItem(const WIN32_FIND_DATA &fd)
-	: m_fileName(fd.cFileName), m_access(fd.ftLastAccessTime),
-	m_create(fd.ftCreationTime), m_write(fd.ftLastWriteTime),
-	m_type(TYPE::Undefined)
+	: impl(new Impl(fd)), weight(fd.nFileSizeLow)
 {}
+
+
+
+CListItem::~CListItem() = default;
 
 
 
@@ -23,13 +45,13 @@ loadImage(basis::CFilePath path)
 		if (path.exist())
 			return Status::CannotOpen;
 
-		m_type = TYPE::Error;
+		impl->m_type = Impl::TYPE::Error;
 		return Status::NotExist;
 	}
 
 	LARGE_INTEGER file_size = file.size();
 	if (file_size.HighPart > 0) {
-		m_type = TYPE::Error;
+		impl->m_type = Impl::TYPE::Error;
 		return Status::SizeError;
 	}
 
@@ -49,8 +71,8 @@ loadImage(basis::CFilePath path)
 	if (!file.read(p, CDDBitmap::kTypeCheckBytes, INFINITE))
 		throw 0;
 
-	m_type = CDDBitmap::getType(p);
-	if (m_type == TYPE::Error)
+	impl->m_type = CDDBitmap::getType(p);
+	if (impl->m_type == Impl::TYPE::Error)
 		return Status::TypeError;
 
 	if (!file.read(static_cast<void*>
@@ -65,11 +87,91 @@ loadImage(basis::CFilePath path)
 			(mem.get())->handle());
 
 	if (succeeded) {
-		m_image = std::move(bmp);
+        weight = static_cast<int>(bmp.usage());
+		impl->m_image = std::move(bmp);
 		return Status::Loaded;
 	}
-	m_type = TYPE::Error;
+	impl->m_type = Impl::TYPE::Error;
 	return Status::LoadError;
+}
+
+
+
+const TCHAR * CListItem::
+fileName() const
+{
+    return impl->m_fileName.c_str();
+}
+
+
+
+bool CListItem::
+isLoadingFailed() {
+    return impl->m_type == Impl::TYPE::Error;
+}
+
+
+
+void CListItem::unload()
+{
+    impl->m_image.reset();
+}
+
+
+
+bool CListItem::
+isLoaded() const
+{
+    return impl->m_image.operator bool();
+}
+
+
+
+bool CListItem::
+draw(HDC dest, const RECT & rcDest, const RECT & rcSrc)
+{
+    return isLoaded() && impl->m_image.transfer(dest, rcDest, rcSrc);
+}
+
+
+
+basis::Size CListItem::
+getSize() const
+{
+    return impl->m_image.getSize();
+}
+
+
+
+basis::Rect CListItem::
+getRect() const
+{
+    auto size = getSize();
+    return{ 0, 0, size.x, size.y };
+}
+
+
+
+FILETIME CListItem::
+ftAccess() const
+{
+    return impl->m_access;
+}
+
+
+
+FILETIME CListItem::
+ftCreate() const
+{
+    return impl->m_create;
+}
+
+
+
+FILETIME CListItem::
+ftWrite() const
+{
+    return impl->m_write;
 }
 
 }  // namespace

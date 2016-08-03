@@ -13,9 +13,9 @@
 
 namespace {
 /*! Draws a string onto the screen.
-	@return Output rectangle.
-	@param pt Position of left-top corner of the text.
-	@param bOut Whether put out the text or not.
+    @return Output rectangle.
+    @param pt Position of left-top corner of the text.
+    @param bOut Whether put out the text or not.
 */
 basis::Rect TextOutRect(HDC h, basis::Point pt, const TCHAR *str, bool bOut)
 {
@@ -65,23 +65,9 @@ CDrawList(CImageViewer &parent_) : parent(parent_), m_enable(false)
 
 
 
-void CImageViewer::CDrawList::
-enable() {
-	if (!m_enable) {
-		m_enable = true;
-		invalidate();
-	}
-}
-
-
-
-void CImageViewer::CDrawList::
-disable()
+CImageViewer::CDrawList::~CDrawList()
 {
-	if (m_enable) {
-		m_enable = false;
-		parent.invalidate(m_offset.rect());
-	}
+    DeleteObject(boldFont);
 }
 
 
@@ -102,24 +88,23 @@ invalidate()
 basis::Rect CImageViewer::CDrawList::
 drawList(Surface *surface, bool bDraw)
 {
-	Rect rcText;	// Output area
-
+	Rect rc;
 	if (parent.filer->isEmpty()) {
 		surface->setFont(boldFont);
 		if (bDraw)
 			SetTextColor(*surface, Colors[not_read]);
-		rcText = TextOutRect(*surface, m_offset.pos(), sNoFileInfo.c_str(), bDraw);
+		rc = TextOutRect(*surface, m_offset.pos(), sNoFileInfo.c_str(), bDraw);
 	}
 	else if (m_enable) {
-		rcText = do_drawList(surface, bDraw);
+		rc = do_drawList(surface, bDraw);
 	}
 
 	if (bDraw) {
-		m_offset.width((std::max)(rcText.right - m_offset.pt().x, 0));
-		m_offset.height((std::max)(rcText.bottom - m_offset.pt().y, 0));
+		m_offset.width((std::max)(rc.right - m_offset.pt().x, 0));
+		m_offset.height((std::max)(rc.bottom - m_offset.pt().y, 0));
 	}
 
-	return rcText;
+	return rc;
 }
 
 
@@ -127,11 +112,12 @@ drawList(Surface *surface, bool bDraw)
 basis::Rect CImageViewer::CDrawList::
 do_drawList(Surface *surface, bool b)
 {
-	Rect rc;
-	LONG client_height = parent.getClientRect().height();
-	iterator iEnd = parent.filer->end();
-	iterator iCurrent = parent.filer->current();
+    Rect rc, total;
 	int pitch = surface->getFontHeight();
+	int client_height = parent.getClientRect().height();
+	iterator iEnd = parent.filer->end();
+    if (b)
+        m_pos.clear();
 
 	basis::Point pt = m_offset.pos();
 	ColorType color;
@@ -143,7 +129,7 @@ do_drawList(Surface *surface, bool b)
 			continue;
 		}
 
-		if (item == iCurrent) {
+		if (item == parent.filer->current()) {
 			surface->setFont(boldFont);
 			color = current_file;
 		}
@@ -158,10 +144,33 @@ do_drawList(Surface *surface, bool b)
 		}
 		if (b)
 			SetTextColor(*surface, Colors[color]);
-		rc.unite(TextOutRect(*surface, pt, item->get()->fileName(), b));
+
+        rc = TextOutRect(*surface, pt, item->get()->fileName(), b);
+        total.unite(rc);
+        if (b)
+            m_pos.push_back({ item, rc });
 		pt.y += (color == current_file) ? surface->getFontHeight() : pitch;
 	}
-	return rc;
+    surface->resetFont();
+	return total;
+}
+
+
+
+CImageViewer::iterator CImageViewer::CDrawList::
+itemFromPt(basis::Point pt)
+{
+    for (auto &i : m_pos) {
+        if (i.second.isInclusive(pt))
+            return i.first;
+    }
+    return parent.filer->end();
+}
+
+
+
+bool CImageViewer::CDrawList::isInclusive(basis::Point pt) {
+    return itemFromPt(pt) != parent.filer->end();
 }
 
 }  // namespace

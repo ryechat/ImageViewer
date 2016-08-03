@@ -2,26 +2,27 @@
 #ifndef GUID_66F5CCBBF45C4752AB6FD2D76BD57BFF
 #define GUID_66F5CCBBF45C4752AB6FD2D76BD57BFF
 
-#include "file_path.h"
-#include "cdd_bitmap.h"
+#ifndef STDAFX_H
+#include <string>
+#include <memory>
+#endif
+
 #include "iunit_test.h"
+#include "types.h"
+namespace basis { class CFilePath; }
 
 namespace image_viewer {
 
 UNIT_TEST(CListItem)
 
 /*!
-	CImageViewer::Impl::Filerにて
-	リストで管理する画像ファイルクラス。
+	CImageViewer::Filerにてリスト管理されるアイテムクラス。
 	CFindDataからのみ生成される
 */
 class CListItem {
 public:
-	using tstr = std::basic_string<TCHAR>;
 	CListItem(const WIN32_FIND_DATA&);
-	~CListItem() = default;
-
-	CListItem&operator=(const CListItem&) = default;
+    ~CListItem();
 	CListItem(CListItem &&) = default;
 	CListItem&operator=(CListItem && ) = default;
 
@@ -45,43 +46,41 @@ public:
 	*/
 	Status	loadImage(::basis::CFilePath path);
 
-	// 外部使用。ビットマップを解放するかどうかの判定に使う
-	bool bUnload;
+
+    //! ファイル名を返す。ディレクトリ名は含まない
+    const TCHAR * fileName() const;
+
+    //! ロードに失敗したファイルかどうかを返す
+    bool	isLoadingFailed();
+
+    //! ロード済みのファイルをアンロードする
+    void	unload();
+
+    //! ロード済みかどうかを返す
+    bool	isLoaded() const;
+
+    //! ロード済みであれば対象のデバイスコンテキストに描画する
+    bool draw(HDC hdc, const RECT& destination, const RECT& source);
+
+    basis::Size	getSize() const; //!< 画像サイズを返す
+    basis::Rect getRect() const; //!< 始点0,0の画像矩形を返す
+
+    FILETIME ftAccess() const;
+    FILETIME ftCreate() const;
+    FILETIME ftWrite()  const;
 
 	// 外部使用。リスト内インデックス
 	int index;
 
-	const TCHAR * fileName() const { return m_fileName.c_str(); }
+    // 概算メモリ使用量。ロード前のみファイルサイズで、ロードするたび更新
+    int weight;
 
-	bool	isLoadingFailed() { return m_type == TYPE::Error; }
-
-	void	unload() { m_image.reset(); }
-
-	bool	isLoaded() const { return m_image.operator bool(); }
-
-	bool draw(HDC dest, const RECT& rcDest, const RECT& rcSrc) {
-		return m_image.transfer(dest, rcDest, rcSrc);
-	}
-
-	basis::Size	getSize()   const { return m_image.getSize(); }
-	basis::Rect rect() const {
-		auto size = m_image.getSize();
-		return{ 0, 0, size.x, size.y };
-	}
-
-	FILETIME ftAccess() const { return m_access; }
-	FILETIME ftCreate() const { return m_create; }
-	FILETIME ftWrite()  const { return m_write;  }
+	// 外部使用。ビットマップを解放するかどうかの判定に使う
+	bool bUnload;
 
 private:
-	basis::Surface m_image;
-	basis::StringBuffer m_fileName;
-	FILETIME  m_access;
-	FILETIME  m_create;
-	FILETIME  m_write;
-
-	using TYPE = basis::CDDBitmap::TYPE;
-	TYPE m_type;
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 }  // namespace

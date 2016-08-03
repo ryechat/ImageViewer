@@ -1,3 +1,17 @@
+/*!/////////////////////////////////////////////////////////////////////////////
+
+    @file
+    Defines WinMain function, entry point of the program.
+    This function will lanch the application class.
+
+    Unit tests would be performed when WinMain is called
+    if it was compiled in debug mode(_DEBUG is defined).
+
+    Unit tests are declaired in their headers, xxxx.h,
+    and defined in test_xxxx.cc files.
+
+//////////////////////////////////////////////////////////////////////////////*/
+
 #include "imemory.h"
 #include "singleton.h"
 #include "image_viewer.h"
@@ -7,8 +21,8 @@ void CheckLeaks() {
 #ifdef _DEBUG
 	auto i = basis::HeapMemory::TotalAmount();	// Images
 	auto j = basis::CMemory::TotalAmount();		// Others
-	if (i || j)
-		*(int*)0 = 0;
+    if (i || j)
+        throw 0;
 #endif
 }
 
@@ -24,23 +38,18 @@ void PerformUnitTest() {
 
 
 
-int WINAPI
-WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdl, int show)
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nShow)
 {
-	(void)(inst, prev);
-
-	// Declairs checking memory leaks,
-	// performed when the program is about to its end.
+	// Declairation to perform leak-checking when the program ends.
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	PerformUnitTest();
 
-	image_viewer::CImageViewer(cmdl, show).run();
+    image_viewer::CImageViewer().create().show(nShow).waitToEnd();
 
 	CheckLeaks();
 
 	// Finalizes singleton objects not to be caught by CrtDbg.
 	basis::SingletonFinalizers::Finalize();
-
 	return 0;
 }

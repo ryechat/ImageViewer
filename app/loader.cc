@@ -2,18 +2,19 @@
 #include <algorithm>
 #endif
 #include "memory_status.h"
+#include "ids.h"
 #include "loader.h"
 #include "profile.h"
 #include "filer.h"
 #include "list_item.h"
-#include "ids.h"
 
 namespace image_viewer {
 
 CImageViewer::Loader::Loader(CImageViewer& parent_)
 : parent(parent_),
-m_preloadRange(parent.profile->general().get(ID::LOADER_RANGE, 20)),
-m_memoryCapMegaBytes(parent.profile->get(ID::LOADER_MEMORY_CAP, 0))
+m_maxPreload(parent.profile->general().load(ID::LOADER_RANGE_MAX, 20)),
+m_minPreload(parent.profile->load(ID::LOADER_RANGE_MIN, 4)),
+m_memoryCapMegaBytes(parent.profile->load(ID::LOADER_MEMORY_CAP, 0))
 {
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);
@@ -29,6 +30,8 @@ m_memoryCapMegaBytes(parent.profile->get(ID::LOADER_MEMORY_CAP, 0))
 CImageViewer::Loader::Status CImageViewer::Loader::
 loadImage(iterator itr, bool bWait)
 {
+    assert(itr != parent.filer->end());
+
 	if (bWait) {
 		waitIfLoading(itr);
 	}
@@ -37,12 +40,10 @@ loadImage(iterator itr, bool bWait)
 			return Status::Loading;
 	}
 
-	Contents *p = itr->get();
-
-	if (p->isLoaded())
+	if (itr->get()->isLoaded())
 		return Status::Finished;
 
-	if (p->isLoadingFailed())
+	if (itr->get()->isLoadingFailed())
 		return Status::Failed;
 
 	if (beginLoad(itr) == false)
@@ -53,10 +54,10 @@ loadImage(iterator itr, bool bWait)
 
 	waitIfLoading(itr);
 
-	if (p->isLoaded())
+	if (itr->get()->isLoaded())
 		return Status::Finished;
 
-	if (p->isLoadingFailed())
+	if (itr->get()->isLoadingFailed())
 		return Status::Failed;
 
 	return Status::CannotOpen;
@@ -68,22 +69,20 @@ loadImage(iterator itr, bool bWait)
 bool CImageViewer::Loader::
 beginLoad(iterator itr) try
 {
-	HANDLE h = CreateEvent(0, 1, 0, 0);
-
 	m_cs.enter();
-	m_loading.emplace_back(itr, h);
+	m_loading.emplace_back(itr, CreateEvent(0, 1, 0, 0));
 	m_cs.leave();
 
-	m_threads.addTask([=]() {
-		auto path = parent.m_dir + itr->get()->fileName();
-		itr->get()->loadImage(path.path());
-		auto cs = m_cs.local();
+	m_threads.addTask([itr, this]() {
+		itr->get()->loadImage(parent.m_dir + itr->get()->fileName());
+        m_cs.enter();
 		for (auto &&i : m_loading) {
 			if (i.first == itr) {
 				SetEvent(i.second);
 				break;
 			}
 		}
+        m_cs.leave();
 		parent.post(WM::COMMAND, static_cast<int>(ID::LOADER_IMAGE_LOADED), 0);
 	});
 	return true;
@@ -96,17 +95,18 @@ catch (std::exception &e) {
 
 
 bool CImageViewer::Loader::
-waitIfLoading(iterator itr, DWORD time)
+waitIfLoading(iterator itr, int time)
 {
 	// m_loadingの要素を削除する責任がある
 	// 待機完了したら削除すること
+    DWORD t = time < 0 ? INFINITE : time;
 	auto cs = m_cs.local();
 	for (auto &&i = m_loading.begin(); i != m_loading.end(); ++i) {
 		if (i->first != itr)
 			continue;
 
 		cs.leave();
-		if (WaitForSingleObject(i->second, time) == WAIT_TIMEOUT)
+		if (WaitForSingleObject(i->second, t) == WAIT_TIMEOUT)
 			return false;
 		cs.enter();
 
@@ -139,52 +139,44 @@ waitIfAnyImageIsLoading()
 void CImageViewer::Loader::
 preloadAround(iterator iter)
 {
-	int nThread = m_threads.threadCount();
-	int avail = (std::numeric_limits<int>::max)();
+    constexpr int megabytes = 1024 * 1024;
+    int avail;
 	if (m_memoryCapMegaBytes) {
-		basis::ProcessMemoryStatus pms(1024 * 1024);
+		basis::ProcessMemoryStatus pms(megabytes);
 		pms.update();
-		avail = static_cast<int>((m_memoryCapMegaBytes - pms.usage()) / 20);
-	}
+		avail = m_memoryCapMegaBytes - static_cast<int>(pms.usage());
+    }
+    else {
+        basis::SystemMemoryStatus sms(megabytes);
+        sms.update();
+        avail = static_cast<int>(sms.avail()) - 200; // 200MBは残す
+    }
 
-	CFiler *pFiler = parent.filer.get();
+    auto &f = parent.filer;
 	iterator iForward = iter;
 	iterator iBackward = iter;
 	iterator *ref = nullptr;
-	Status status;
-	bool bEnd = false;
-	iterator last = parent.filer->end();
 
 	// 優先度順にロード
-	for (int i = m_preloadRange * 2; i > 0; i--) {
+	for (int i = 0; i < m_maxPreload * 2; ++i) {
 		ref = (i % 2 == 0) ? &iForward : &iBackward;
-		iter = pFiler->move(*ref, (i % 2 == 0) ? 1 : -1);
-		if (iter == *ref) {
-			if (bEnd)
-				return;
-			bEnd = true;
+		iter = f->move(*ref, (i % 2 == 0) ? 1 : -1);
+		if (iter == *ref)
 			continue;
-		}
-		bEnd = false;
-		*ref = iter;
-		if (avail <= 1 && i <= m_preloadRange * 2 - 2) {
-			if (iter->get()->isLoaded())
-				last = iter;
-			continue;
-		}
-		if (nThread-- < 0)
-			continue;
-		status = loadImage(iter, false);
-		if (status == Status::Failed) {
-			if (iter->get()->isLoadingFailed())
-				pFiler->erase(iter);
-		}
-		else if (status == Status::Loading) {
-			--avail;
-		}
+
+        if (iter->get()->isLoadingFailed()) {
+            f->erase(iter);
+            continue;
+        }
+        if (avail < 10 && i >= m_minPreload * 2)
+            break;
+
+        *ref = iter; // インクリメント
+        if (!iter->get()->isLoaded()) {
+            loadImage(iter, false);
+            avail -= (std::max)(iter->get()->weight / megabytes, 20);
+        }
 	}
-	if (last != parent.filer->end())
-		releaseIfOk(*ref);
 }
 
 
@@ -192,12 +184,10 @@ preloadAround(iterator iter)
 void CImageViewer::Loader::
 helper_release(iterator itr, bool bPerform, bool bMark)
 {
-	CFiler *pFiler = parent.filer.get();
+	assert(itr != parent.filer->end());
 
-	assert(itr != pFiler->end());
-
-	iterator iEnd = ++pFiler->move(itr, m_preloadRange);
-	for (iterator i = pFiler->move(itr, -m_preloadRange); i != iEnd; ++i)
+	iterator iEnd = std::next(parent.filer->move(itr, m_maxPreload));
+	for (iterator i = parent.filer->move(itr, -m_maxPreload); i != iEnd; ++i)
 	{
 		bool *bUnload = &i->get()->bUnload;
 		if (bPerform) {
@@ -215,6 +205,7 @@ helper_release(iterator itr, bool bPerform, bool bMark)
 void CImageViewer::Loader::
 releaseIfOk(iterator itr)
 {
+    assert(itr != parent.filer->end());
 	waitIfLoading(itr);
 	itr->get()->unload();
 }

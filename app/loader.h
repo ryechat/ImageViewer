@@ -28,7 +28,8 @@ public:
 
 	//! 終了待ち
 	bool isLoading(iterator itr) { return !waitIfLoading(itr, 0); }
-	bool waitIfLoading(iterator itr, DWORD timeToWait = INFINITE);
+    bool waitIfLoading(iterator itr) { return waitIfLoading(itr, -1); }
+	bool waitIfLoading(iterator itr, int time);
 
 	//! ロードタスクが0になるのを待つ
 	bool waitIfAnyImageIsLoading();
@@ -44,7 +45,8 @@ private:
 	void helper_release(iterator itr, bool bPerform, bool bMark);
 
 	CImageViewer &parent;
-	const int m_preloadRange;
+    const int m_maxPreload;
+    const int m_minPreload;
 	const int m_memoryCapMegaBytes;
 	basis::CThreadUnity m_threads;
 	basis::CriticalSection m_cs;

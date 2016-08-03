@@ -1,7 +1,9 @@
 #pragma once
 #ifndef GUID_88E6B0C9D24C48378AB9ED3883518A73
 #define GUID_88E6B0C9D24C48378AB9ED3883518A73
-
+#ifndef STDAFX_H
+#include <functional>
+#endif
 #include "private_profile.h"
 #include "image_viewer.h"
 
@@ -10,69 +12,71 @@ namespace image_viewer {
 
 class CImageViewer::Profile {
 public:
-	using tstr = std::basic_string<TCHAR>;
-
 	Profile();
-	~Profile() = default;
-
 	Profile(Profile&) = delete;
 
-	void setPath(tstr path)	{ m_prof.path(std::move(path)); }
 	bool exist();
 	bool isEnable() { return m_enable; }
 	bool enable() { return setEnable(true); }
 	bool disable() { return setEnable(false); }
 
-	Profile& general() {
-		m_prof.section(SECTION_GENERAL);
-		return *this;
-	}
+    //! セクション指定
+	Profile& general() { return section(GENERAL); }
+    //! セクション指定
+	Profile& menu() { return section(MENU);	}
+    //! セクション指定
+	Profile& window() { return section(WINDOW);	}
+    //! セクション指定
+	Profile& control() { return section(CONTROL); }
 
-	Profile& menu() {
-		m_prof.section(SECTION_MENU);
-		return *this;
-	}
+    /*! セクション内のすべての項目に関数オブジェクトを適用.
+        渡されるのは項目のIDと、それに対応する値文字列へのポインタ。
+        この関数はControlクラスからキーコマンドの割り付けに使用される。
+    */
+    void applyToAllItemInTheSection(std::function<void(ID, const TCHAR *)> f);
 
-	Profile& window() {
-		m_prof.section(SECTION_WINDOW);
-		return *this;
-	}
-
-	Profile& control() {
-		m_prof.section(SECTION_CONTROL);
-		return *this;
-	}
-
+    //! キー名を返す
 	const TCHAR * getKeyString(ID id);
 
-	int get(ID id, int nDefault);
-	bool write(ID id, int value);
-	void access(ID id, LONG *value, bool bWrite);
+	//! 言語ファイルにある対訳を返す。なければキー名を返す
+    const TCHAR * getTranslatedString(ID id);
 
-	const TCHAR *get(ID id, const TCHAR *sDefault);
-	bool write(ID id, const TCHAR * value);
-	const TCHAR *access(ID id, const TCHAR *value, bool bWrite);
-
+    //! ブーリアン型プロファイルを読む
 	bool loadBoolean(ID id, bool bDefault);
+    //! ブーリアン型プロファイルを書く
 	bool saveBoolean(ID id, bool b);
-	void booleanReadWrite(ID id, bool *b, bool bWrite);
 
-	// 訳があれば翻訳する。なければキー名を返す
-	tstr getTranslatedString(ID id);
+    //! 整数型プロファイルを読む
+    int load(ID id, int nDefault);
+    //! 整数型プロファイルを書く
+	bool save(ID id, int n);
+
+    /*! 文字列型プロファイルを読む.
+        なければsDefaultのコピーを返し、nullptrが返ることはない。
+        sDefaultはnullptrの場合、空文字列として扱われる。
+    */
+	const TCHAR * load(ID id, const TCHAR *sDefault);
+    //! 文字列型プロファイルを書く
+	bool save(ID id, const TCHAR * value);
 
 private:
 	bool setEnable(bool bEnable);
+    Profile& section(const TCHAR *p) {
+        if (!p)
+            throw 0;
+        m_prof.section(p); return *this;
+    }
 	const TCHAR * ToStr(bool b);
 
 	struct Pair { ID id; const TCHAR *key; };
 	static Pair m_profile_ids[];
-	static constexpr TCHAR * const SECTION_WINDOW = TEXT("Window");
-	static constexpr TCHAR * const SECTION_CONTROL = TEXT("Control");
-	static constexpr TCHAR * const SECTION_MENU = TEXT("Menu");
-	static constexpr TCHAR * const SECTION_GENERAL = TEXT("General");
+	static constexpr TCHAR * const WINDOW = TEXT("Window");
+	static constexpr TCHAR * const CONTROL = TEXT("Control");
+	static constexpr TCHAR * const MENU = TEXT("Menu");
+	static constexpr TCHAR * const GENERAL = TEXT("General");
+	static constexpr TCHAR * const LANGUAGE = TEXT("Language");
 	static constexpr TCHAR * const kSettingFile = TEXT("setting.ini");
 	static constexpr TCHAR * const kLanguageFile = TEXT("language.ini");
-	static constexpr TCHAR * const kSectionLanguage = TEXT("Language");
 
 	bool m_enable;
 	basis::CPrivateProfile m_prof, m_lang;

@@ -3,46 +3,31 @@
 #include <algorithm>
 #endif
 
-#include "window_message.h"
 #include "stdfnc.h"
 #include "monitor.h"
-#include "exception.h"
+#include "window_message.h"
 
-#include "image_viewer.h"
 #include "ids.h"
 #include "list_item.h"
 #include "profile.h"
-#include "ui_listener.h"
-#include "draw_list.h"
 #include "menu.h"
+#include "control.h"
 #include "filer.h"
+#include "draw_list.h"
 #include "loader.h"
 
 namespace image_viewer {
 
-CImageViewer::CImageViewer(char * /*cmd*/, int nShow)
+CImageViewer::CImageViewer()
 	: m_exitCode(0), isImageInvalidated(true)
 {
+    hook(this);
 	profile.reset(new Profile);
 	menu.reset(new ContextMenu(*this));
-	input.reset(new Control(*this));
-	filer.reset(new CFiler(*this));
+    control.reset(new Control(*this));
+	filer.reset(new Filer(*this));
 	list.reset(new CDrawList(*this));
 	loader.reset(new Loader(*this));
-
-	createMainWindow(this);
-	saveload(false);
-
-	menu->initialize();
-	if (menu->isSelected(ID::VIEW_LIST))
-		list->enable();
-
-	m_captionConfirmDelete = 
-		profile->getTranslatedString(ID::FILE_DELETE);
-	m_textConfirmDelete =
-		profile->getTranslatedString(ID::CONFIRM_DELETE);
-	updateTitleBar();
-	show(nShow);
 }
 
 
@@ -53,17 +38,28 @@ CImageViewer::~CImageViewer()
 
 
 int CImageViewer::
-onEvent(Window *win, WM msg, WPARAM wp, LPARAM lp) try
+onEvent(Window *win, Message msg, WPARAM wp, LPARAM) try
 {
-	UNREFERENCED_PARAMETER(lp);
 	assert(win == this);
 
 	switch (msg) {
 	case WM::CREATE:
+	    saveload(false);
+
+	    menu->initialize();
+	    if (menu->isSelected(ID::VIEW_FILELIST))
+		    list->show();
+
+	    m_captionConfirmDelete = 
+		    profile->getTranslatedString(ID::FILE_DELETE);
+	    m_textConfirmDelete =
+		    profile->getTranslatedString(ID::CONFIRM_DELETE);
+	    updateTitleBar();
 		DragAcceptFiles(*win, true);
 		return 0;
 
 	case WM::PAINT:
+        m_exitCode = 0;
 		return onPaint();
 
 	case WM::COMMAND:
@@ -82,8 +78,6 @@ onEvent(Window *win, WM msg, WPARAM wp, LPARAM lp) try
 		return 0;
 
 	case WM::ERASEBKGND:
-		invalidate();
-		
 		return 1;
 
 	case WM::CONTEXTMENU: // Shift + F10
@@ -95,9 +89,9 @@ onEvent(Window *win, WM msg, WPARAM wp, LPARAM lp) try
 			menu->saveSettings();
 			saveload(true);
 		}
-		DestroyWindow(*win);
+        destroy();
 		m_exitCode = 0;
-		return 0;
+		return 1;
 
 	case WM::DESTROY:
 		PostQuitMessage(0);
@@ -115,36 +109,56 @@ catch (std::exception &e)
 
 
 
+basis::CKey CImageViewer::getKey(ID id, int n)
+{
+    return control->getKey(id, n);
+}
+
+
+
 void CImageViewer::saveload(bool bSave)
 {
-	if (bSave && m_dir.exist())
-		profile->general().write(ID::LAST_PATH, m_dir.path().c_str());
+    profile->general();
+    if (!bSave)
+        m_lastPath = profile->load(ID::LAST_PATH, nullptr);
+    else if (m_dir.exist())
+        profile->save(ID::LAST_PATH, m_dir.path().c_str());
 
 	profile->window();
-	if (profile->get(ID::WINDOW_REMINDER, true) == false)
+	if (profile->loadBoolean(ID::WINDOW_REMINDER, true) == false)
 		return;
 
-	RECT rc = place();
 	if (profile->loadBoolean(ID::WINDOW_POSITION, false)) {
-		profile->access(ID::WINDOW_LEFT, &rc.left, bSave);
-		profile->access(ID::WINDOW_TOP, &rc.top, bSave);
-		profile->access(ID::WINDOW_RIGHT, &rc.right, bSave);
-		profile->access(ID::WINDOW_BOTTOM, &rc.bottom, bSave);
-		!bSave && place(rc);
+        Rect rc = place();
+        if (bSave) {
+            profile->save(ID::WINDOW_LEFT, rc.left);
+            profile->save(ID::WINDOW_TOP, rc.top);
+            profile->save(ID::WINDOW_RIGHT, rc.right);
+            profile->save(ID::WINDOW_BOTTOM, rc.bottom);
+        }
+        else {
+            rc.left = profile->load(ID::WINDOW_LEFT, rc.left);
+            rc.top = profile->load(ID::WINDOW_TOP, rc.top);
+            rc.right = profile->load(ID::WINDOW_RIGHT, rc.right);
+            rc.bottom = profile->load(ID::WINDOW_BOTTOM, rc.bottom);
+            place(rc);
+        }
 	}
 
-	bool bZoomed = bSave && isMaximized();
 	if (profile->loadBoolean(ID::WINDOW_ZOOMING, false)) {
-		profile->booleanReadWrite(ID::WINDOW_MAXIMIZE, &bZoomed, bSave);
-		if (!bSave && bZoomed)
-			maximize();
+        const ID id = ID::WINDOW_MAXIMIZE;
+        if (bSave)
+            profile->saveBoolean(id, isMaximized());
+        else if (profile->loadBoolean(id, false))
+            maximize();
 	}
 
-	bool bPopup = bSave && menu->isSelected(ID::VIEW_POPUP);
 	if (profile->loadBoolean(ID::WINDOW_STYLE, false)) {
-		profile->booleanReadWrite(ID::VIEW_POPUP, &bPopup, bSave);
-		if (!bSave && bPopup)
-			popup();
+        const ID id = ID::VIEW_POPUP;
+        if (bSave)
+            profile->saveBoolean(id, menu->isSelected(id));
+        else
+            popup(profile->loadBoolean(id, false));
 	}
 }
 
@@ -218,7 +232,7 @@ showLast()
 
 
 bool CImageViewer::
-setPath(basis::CFilePath path)
+setPath(FilePath path)
 {
 	if (loader->waitIfAnyImageIsLoading() == false) {
 		MessageBox(0, TEXT("Loading thread wouldn't respond."
@@ -241,7 +255,7 @@ setPath(basis::CFilePath path)
 	}
 
 	auto filename = path.getFileName();
-	iterator itr = filer->search([=](Element &p)->bool {
+	iterator itr = filer->search([filename](Element &p)->bool {
 		return (filename == p->fileName());
 	});
 	setCurrent(itr);
@@ -251,7 +265,7 @@ setPath(basis::CFilePath path)
 
 
 bool CImageViewer::
-setCurrent(const iterator &itr)
+setCurrent(iterator itr)
 {
 	if (itr == filer->end())
 		return false;
@@ -307,10 +321,10 @@ onCommand(WPARAM wp)
 		return 1;
 
 	case ID::LAST_PATH:
-		setPath(basis::CFilePath(profile->general().get(id, nullptr)));
+		setPath(m_lastPath);
 		break;
 
-	case ID::FILE_PREVIOUS:
+	case ID::FILE_BACK:
 		showPrev();
 		break;
 
@@ -356,11 +370,11 @@ onCommand(WPARAM wp)
 		updateTitleBar();
 		break;
 
-	case ID::VIEW_LIST:
+	case ID::VIEW_FILELIST:
 		if (menu->isSelected(id))
-			list->enable();
+			list->show();
 		else
-			list->disable();
+			list->hide();
 		break;
 
 	case ID::VIEW_UPSCALE:
@@ -386,20 +400,18 @@ onCommand(WPARAM wp)
 	case ID::SORT_GREATER_CREATION:
 		filer->sort();
 		list->invalidate();
-		update();
 		break;
 
 	case ID::WINDOW_CLOSE:
-		post(basis::Message::CLOSE, 0, 0);
+		post(WM::CLOSE, 0, 0);
 		break;
 
 	case ID::SHOW_PROPERTY:
 		if (!filer->isEmpty()) {
-			Element p = *filer->current();
-			auto path = m_dir + p->fileName();
+			auto path = m_dir + filer->current()->get()->fileName();
 			ShowProperty(*this, path.path().c_str());
-			break;
 		}
+		break;
 
 	default:
 		return 0;
@@ -414,28 +426,8 @@ void CImageViewer::
 update() const
 {
 	menu->updateStatus();
-	UpdateWindow(*this);
+    Window::update();
 	updateTitleBar();
-}
-
-
-
-void CImageViewer::
-invalidate() const
-{
-	isImageInvalidated = true;
-	Window::invalidate(nullptr);
-}
-
-
-
-void CImageViewer::
-invalidate(const Rect &rc) const
-{
-	if (rc) {
-		RECT rect = rc;
-		Window::invalidate(&rect);
-	}
 }
 
 
@@ -443,20 +435,13 @@ invalidate(const Rect &rc) const
 bool CImageViewer::
 updateTitleBar() const
 {
-	tstr title;
-	auto current = filer->isEmpty() ? nullptr : filer->current()->get();
-	if (current && menu->isSelected(ID::VIEW_FILENAME))
-		title = current->fileName();
-	else
-		title = NAME_VERSION;
+	tstr title = (filer->isEmpty())
+        ? NAME_VERSION
+        : filer->current()->get()->fileName();
 
-	int index = static_cast<int>(current
-		? filer->indexof(filer->current()) + 1
-		: 0);
-	int size = static_cast<int>(filer->size());
-
+    int index = filer->isEmpty() ? 0 : filer->indexof(filer->current()) + 1;
 	title += TEXT(" [") + basis::ToStr(index)
-		+ TEXT("/") + basis::ToStr(size)
+		+ TEXT("/") + basis::ToStr(filer->size())
 		+ TEXT("]");
 
 	return setTitle(title.c_str());
@@ -468,10 +453,11 @@ bool CImageViewer::
 toggleScreen()
 {
 	if (!isMaximized()) {
-		popup(true);
+		popup();
 		maximize();
 	}
 	else if (!isMultiMaximized()) {
+        popup();
 		maximize_multi();
 	}
 	else {
@@ -481,6 +467,13 @@ toggleScreen()
 	m_offset.reset();
 	invalidate();
 	return true;
+}
+
+
+
+ID CImageViewer::getSortWay() const
+{
+    return menu->getSortWay();
 }
 
 
@@ -503,10 +496,12 @@ onPaint()
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(*this, &ps);
 
-	if (m_backbuffer.compatible(hdc, clientSize())) {
+	if (m_backbuffer.compatible(hdc, getClientSize())) {
+        invalidate(getClientRect());
 		SetBkMode(m_backbuffer, TRANSPARENT);
 		m_backbuffer.pen(GetStockObject(WHITE_PEN));
 		m_backbuffer.brush(GetStockObject(WHITE_BRUSH));
+        isImageInvalidated = true;
 	}
 
 	if (filer->isEmpty()) {
@@ -515,12 +510,11 @@ onPaint()
 	else {
 		Rect image_rect;
 		if (!filer->isEmpty())
-			image_rect = filer->current()->get()->rect();
+			image_rect = filer->current()->get()->getRect();
 		Size drawing_size = getDrawSize(image_rect.size());
 
 		Rect src = { 0, 0, drawing_size.x, drawing_size.y };
-		if (m_offscreen.compatible(hdc, drawing_size) ||
-		isImageInvalidated) {
+		if (m_offscreen.compatible(hdc, drawing_size) || isImageInvalidated) {
 			isImageInvalidated = false;
 			filer->current()->get()->draw(m_offscreen, src, image_rect);
 		}
@@ -539,7 +533,7 @@ onPaint()
 
 
 basis::Rect CImageViewer::
-getDrawRect()
+getDrawRect() const
 {
 	if (filer->isEmpty())
 		return{};
@@ -549,22 +543,22 @@ getDrawRect()
 
 
 basis::Rect CImageViewer::
-getDrawRect(const Size &size)
+getDrawRect(const Size &size) const
 {
 	Rect rc{ 0, 0, size.x, size.y };
 	rc.slide(m_offset);
 	if (menu->isSelected(ID::VIEW_CENTER))
-		rc.slide((clientSize() - size) / 2);
+		rc.slide((getClientSize() - size) / 2);
 	return rc;
 }
 
 
 
 basis::Size CImageViewer::
-getDrawSize(const Size &image_size)
+getDrawSize(const Size &image_size) const
 {
 	Size size = image_size;
-	const auto client = clientSize();
+	const auto client = getClientSize();
 
 	if (!client.x || !client.y || !size.x || !size.y)
 		return{};
@@ -591,11 +585,28 @@ getDrawSize(const Size &image_size)
 
 
 void CImageViewer::
-invalidate_image()
+invalidate() const
+{
+    isImageInvalidated = true;
+    Window::invalidate();
+}
+
+
+
+void CImageViewer::
+invalidate_image() const
 {
 	isImageInvalidated = true;
 	invalidate(m_drawingRect);
 	invalidate(getDrawRect());
+}
+
+
+
+void CImageViewer::move_image(Size diff)
+{
+    m_offset += diff;
+    invalidate(getDrawRect().unite(m_drawingRect));
 }
 
 }  // namespace

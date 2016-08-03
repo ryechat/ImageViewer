@@ -2,19 +2,17 @@
 #include "list_item.h"
 #include "ids.h"
 #include "filer.h"
-#include "menu.h"
-#include "window.h"
 
 namespace image_viewer {
 
-void CImageViewer::CFiler::
+void CImageViewer::Filer::
 generate(std::basic_string<TCHAR> dir)
 {
 	clear();
 	basis::CFindFile e((dir += TEXT("\\*")).c_str());
 	for (int i = 0; e.nextFile(); i++) {
-		m_list.emplace_back(new CListItem(e.get()));
-		m_list.back()->index = i;
+		m_list.emplace_back(new Content(e.get()));
+        m_list.back()->index = i;
 	}
 	m_current = begin();
 }
@@ -22,7 +20,7 @@ generate(std::basic_string<TCHAR> dir)
 
 
 // first != last ‚Ì‚Æ‚«Alast‚ÍŠÜ‚Ü‚È‚¢‚±‚Æ‚É’ˆÓ
-CImageViewer::iterator CImageViewer::CFiler::
+CImageViewer::iterator CImageViewer::Filer::
 erase(iterator first, iterator last)
 {
 	const iterator iEnd = end();
@@ -60,11 +58,11 @@ erase(iterator first, iterator last)
 
 
 
-void CImageViewer::CFiler::
+void CImageViewer::Filer::
 sort()
 {
-	int sort_way = m_parent.menu->getSortWay();
-	m_list.sort([&](const Element&lhs, const Element&rhs) {
+	ID sort_way = m_parent.getSortWay();
+	m_list.sort([sort_way, this](const Element&lhs, const Element&rhs) {
 		return compare(lhs, rhs, sort_way);
 	});
 	giveIndices(m_list.begin(), 0);
@@ -72,15 +70,51 @@ sort()
 
 
 
-int CImageViewer::CFiler::
-indexof(const_iterator itr) const
+bool CImageViewer::Filer::
+compare(const Element &lhs, const Element &rhs, ID sortWay)
 {
-	return itr->get()->index;
+    FILETIME ft1, ft2;
+    bool descending = false;
+
+    switch (sortWay) {
+
+    default:
+    case ID::SORT_GREATER_WRITE:
+        descending = true;	// fall through
+    case ID::SORT_LESSER_WRITE:
+        ft1 = lhs->ftWrite();
+        ft2 = rhs->ftWrite();
+        break;
+
+    case ID::SORT_GREATER_CREATION:
+        descending = true;	// fall through
+    case ID::SORT_LESSER_CREATION:
+        ft1 = lhs->ftCreate();
+        ft2 = rhs->ftCreate();
+        break;
+
+    case ID::SORT_GREATER_ACCESS:
+        descending = true;	// fall through
+    case ID::SORT_LESSER_ACCESS:
+        ft1 = lhs->ftAccess();
+        ft2 = rhs->ftAccess();
+        break;
+    }
+
+    return (::CompareFileTime(&ft1, &ft2) == (descending ? 1 : -1));
 }
 
 
 
-void CImageViewer::CFiler::
+int CImageViewer::Filer::
+indexof(const_iterator itr) const
+{
+    return itr == cend() ? 0 : itr->get()->index;
+}
+
+
+
+void CImageViewer::Filer::
 giveIndices(iterator iStart, int index)
 {
 	for (; iStart != end(); ++iStart) {
@@ -90,22 +124,22 @@ giveIndices(iterator iStart, int index)
 
 
 
-CImageViewer::iterator CImageViewer::CFiler::
+CImageViewer::iterator CImageViewer::Filer::
 search(std::function<bool(Element&)> func)
 {
 	assert(func);
-	iterator itr;
+	iterator itr = begin();
 
-	for (itr = begin(); itr != end(); ++itr) {
-		if (func(*itr))
-			break;
-	}
+    while (itr != end())
+        if (func(*(itr++)))
+            break;
+
 	return itr;
 }
 
 
 
-CImageViewer::iterator CImageViewer::CFiler::
+CImageViewer::iterator CImageViewer::Filer::
 move(iterator itr, int nCount)
 {
 	iterator iEnd = end();
@@ -125,40 +159,5 @@ move(iterator itr, int nCount)
 }
 
 
-
-bool CImageViewer::CFiler::
-compare(const Element &lhs, const Element &rhs, int sortWay)
-{
-	FILETIME ft1, ft2;
-	bool bGreaterSort = false;
-
-	using ID = ID;
-	switch (static_cast<ID>(sortWay)) {
-
-	default:
-	case ID::SORT_GREATER_WRITE:
-		bGreaterSort = true;	// fall through
-	case ID::SORT_LESSER_WRITE:
-		ft1 = lhs->ftWrite();
-		ft2 = rhs->ftWrite();
-		break;
-
-	case ID::SORT_GREATER_CREATION:
-		bGreaterSort = true;	// fall through
-	case ID::SORT_LESSER_CREATION:
-		ft1 = lhs->ftCreate();
-		ft2 = rhs->ftCreate();
-		break;
-
-	case ID::SORT_GREATER_ACCESS:
-		bGreaterSort = true;	// fall through
-	case ID::SORT_LESSER_ACCESS:
-		ft1 = lhs->ftAccess();
-		ft2 = rhs->ftAccess();
-		break;
-	}
-
-	return (::CompareFileTime(&ft1, &ft2) == (bGreaterSort ? 1 : -1));
-}
 
 }  // namespace

@@ -6,18 +6,18 @@
 
 namespace image_viewer {
 
-//! コントロールID (0, 0x6FFF]
-/*!	100か101から使うのが慣例
-	WM_CREATE,WM_CLOSE,WM_COMMAND(111)とかぶらないようにする
-	ループ回したりするのでenum classは使わない。
-	メニューはこのID順に並ぶ
+/*! コントロールID (0, 0x6FFF].
+    100か101から使うのが慣例らしい。
+    COMMAND_BEGIN 以降はプロファイル可能なコマンドID。
+    コマンドID に対応する文字列は Profile クラスにて定義される。
+    MENU_BEGIN 以降はメニュー項目で、このID順に並ぶ。
 */
 enum class ID : int {
-	UNDEFINED,
-	LAST_PATH,
+	UNDEFINED = 0,
+	LAST_PATH = 101,
 	PROFILE_ENABLE,
-	CONTROL_USEDEFAULT,
-	LOADER_RANGE,
+    LOADER_RANGE_MIN,
+	LOADER_RANGE_MAX,
 	LOADER_MEMORY_CAP,
 	LOADER_IMAGE_LOADED,
 	LIST_EMPTY,
@@ -43,7 +43,7 @@ enum class ID : int {
 
 	MENU_BEGIN,
 
-	FILE_PREVIOUS,
+	FILE_BACK,
 	FILE_NEXT,
 	FILE_FIRST,
 	FILE_LAST,
@@ -55,7 +55,7 @@ enum class ID : int {
 	VIEW_BEGIN,
 	VIEW_POPUP,
 	VIEW_FILENAME,
-	VIEW_LIST,
+	VIEW_FILELIST,
 	VIEW_CENTER,
 	VIEW_UPSCALE,
 	VIEW_DOWNSCALE,
@@ -78,6 +78,14 @@ enum class ID : int {
 	COMMAND_END,
 	IDM_USER_END,		// 終端
 }; // enum
+
+ID inline next(ID id) {
+    return static_cast<ID>(static_cast<int>(id) + 1);
+}
+
+ID inline prev(ID id) {
+    return static_cast<ID>(static_cast<int>(id) - 1);
+}
 
 } // namespace
 

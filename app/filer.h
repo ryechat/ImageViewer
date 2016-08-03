@@ -13,10 +13,10 @@
 namespace image_viewer {
 
 //! リスト管理を行う内部クラス
-class CImageViewer::CFiler {
+class CImageViewer::Filer {
 public:
-	CFiler(CImageViewer &parent_) : m_parent(parent_), m_current(end()) {}
-	~CFiler() = default;
+	Filer(CImageViewer &parent_) : m_parent(parent_), m_current(end()) {}
+	~Filer() = default;
 
 	//! ディレクトリ内のファイルをリスト化する。
 	/*! @par	関数実行前に保持していたリストは解放され、
@@ -82,7 +82,7 @@ public:
 	iterator move(iterator itr, int nCount);
 
 private:
-	bool compare(const Element&, const Element&, int sortWay);
+	bool compare(const Element&, const Element&, ID sortWay);
 
 	CImageViewer &m_parent;
 	ListTy m_list;
