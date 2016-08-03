@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <dwmapi.h>
 #include <ctype.h>
+#include <Psapi.h>
 
 #ifdef UNICODE
 #include <tchar.h>		// _stprintf_s, TCHAR
