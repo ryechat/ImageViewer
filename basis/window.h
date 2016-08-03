@@ -1,14 +1,17 @@
 #pragma once
 #ifndef GUID_05B31CB4D53047EDAFFA66A83A82742A
 #define GUID_05B31CB4D53047EDAFFA66A83A82742A
-
+#ifndef STDAFX_H
+#include <memory>
+#include <functional>
+#endif
 #include "types.h"
 #include "ievent_handler.h"
-#include "window_hook.h"
 
 namespace basis {
 
 class StringBuffer;
+enum class Message : int;
 
 /*! Window class.
 	@note All coordinates used as parameters and return values
@@ -16,21 +19,32 @@ class StringBuffer;
 */
 class Window : public IEventHandler {
 public:
-	Window() { hook(this); }
-	virtual ~Window() = default;
+    using Listener = std::function<int(Window*, Message, WPARAM, LPARAM)>;
+    Window();
+    virtual ~Window();
 
 	Window(const Window&) = delete;
 	Window&operator=(const Window&) = delete;
-	Window(Window&&) = delete;
-	Window&operator=(Window&&) = delete;
+    Window(Window&&) = default;
+	Window&operator=(Window&&) = default;
 
-	operator HWND() const { return m_h; }
+    operator HWND() const;
 
-	virtual int onEvent(Window*, Message, WPARAM, LPARAM) override = 0;
+    const Window& hook(IEventHandler *p) const;
 
-	int post(Message msg, WPARAM wp, LPARAM lp) {
-		return PostMessage(*this, static_cast<UINT>(msg), wp, lp);
-	}
+    const Window& hook(Listener f) const;
+
+    const Window& unhook(IEventHandler *p) const;
+
+    //! デフォルトのウィンドウ作成
+    virtual Window& create();
+
+    void waitToEnd() const;
+
+    virtual int onEvent(Window*, Message, WPARAM, LPARAM) override { return 0; }
+
+    //! Places a message in window's message queue and returns control immediatly.
+    void post(Message msg, WPARAM wp, LPARAM lp);
 
 	/*! Returns rectangle of the window.
 		This function returns the rectangle of the window.
@@ -49,18 +63,19 @@ public:
 		so that window will fit left-top edge
 		when left-top coordinate is set to be (0, 0).
 	*/
-	bool setRect(Rect dest) const;
+	void setRect(Rect dest) const;
 
 	Rect getWindowRect() const;	// API wrapper
-	Rect getClientRect() const; // API wrapper
+    Size getWindowSize() const;
 
 	/*! Returns client area of the window.
 		Different from GetClientRect API function, returned
 		rectangle is expressed in virtual-screen coordinates.
 	*/
-	Rect getClientRectInVirtualScreen() const;
+	Rect getClientRectInScreen() const;
 
-	Size clientSize() const;
+	Rect getClientRect() const; // API wrapper
+	Size getClientSize() const;
 
 	// Gets a coordinate where normalized window would be positioned.
 	Rect place() const;
@@ -75,13 +90,13 @@ public:
 	bool moveTo(Point pt) const;
 
 	// Gets window size.
-	Size getSize() const;
+    Size getSize() const { return getRect().size(); }
 
 	// Gets window width.
-	int getWidth() const;
+    int getWidth() const { return getRect().width(); }
 
 	// Gets window height.
-	int getHeight() const;
+    int getHeight() const { return getRect().height(); }
 
 	//! Maximizes the window.
 	void maximize() const;
@@ -125,12 +140,13 @@ public:
 		It can also retreive the parameter
 		that was handed to entry point to indicate how to show it.
 	*/
-	void show(int nShow = SW_SHOW) const;
+	const Window& show(int nShow = SW_SHOW) const;
 
 	//! Hides the window.
-	void hide() const;
+	const Window& hide() const;
 
-	void invalidate(const RECT *rc) const;
+    void invalidate() const;
+	void invalidate(const Rect &rc) const;
 
 	//! Updates the window by executing WM_PAINT message.
 	void update() const;
@@ -148,56 +164,24 @@ public:
 	StringBuffer getTitle() const;
 
 	HWND addChild(const TCHAR *title, Rect pos, DWORD addStyle);
-	HWND addButton(const TCHAR *title, const Rect& pos) {
-		return addChild(title, pos, BS_DEFPUSHBUTTON);
-	}
-	HWND addRadioButton(const TCHAR *title, const Rect& pos) {
-		return addChild(title, pos, BS_AUTORADIOBUTTON);
-	}
 
-	int run();
-	void hook(IEventHandler *p) { m_hook.push_front(p); }
-	void unhook(IEventHandler *p) { m_hook.unhook(p); }
+    HWND addButton(const TCHAR *title, const Rect& pos);
 
+    HWND addRadioButton(const TCHAR *title, const Rect& pos);
 
 protected:
+	virtual int run() const;
+    void destroy();
+    bool applyFrame() const;
+    bool setWindowRect(const Rect &rc, UINT flag) const;// API wrapper
 
-	//! デフォルトのウィンドウ作成関数
-	virtual HWND createMainWindow(Window *win);
-
-	//! フックされたリスナにイベントを渡す
-	int broadcast(Window*, Message, WPARAM, LPARAM);
+	//! リスナにイベントを渡す
+	int broadcast(Message, WPARAM, LPARAM);
 
 private:
-	class DWM;  // Desktop Window Manager
-
-	enum class Set : unsigned {
-		ACTIVATE = SWP_NOSIZE | SWP_NOMOVE,
-		MOVE   = SWP_NOSIZE   | SWP_NOSENDCHANGING,
-		RESIZE = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
-		FRAME  = SWP_NOSIZE   | SWP_NOCOPYBITS | SWP_NOMOVE
-			| SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOOWNERZORDER
-			| SWP_NOZORDER,
-	};
-	bool setWindowRect(const Rect &rc, Set flag) const;// API wrapper
-
-	bool applyFrame() const { return setWindowRect({}, Set::FRAME); }
-
-	//! ウィンドウ生成時に使うプロシージャを返す
-	WNDPROC GetWndProc(Window *win);
-
-	//! ウィンドウハンドルに関連付けられたイベントハンドラを取得し委譲する。
-	static LRESULT CALLBACK Dispatch(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
-
-	//! CreateWindow中のインスタンス
-	static Window *ConstructingInstance;
-
-	//! HWNDに仕込んだポインタを取得する
-	static Window * GetInstance(HWND hWnd);
-
-	HWND m_h;
-	WindowHook m_hook;
-	ATOM inline createWindowAtom(const TCHAR *identifier, WNDPROC proc);
+	class DWM;  // Desktop Window Manager, Utility
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 }  // namespace

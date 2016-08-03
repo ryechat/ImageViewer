@@ -21,7 +21,6 @@ UNIT_TEST(CPrivateProfile)
 class CPrivateProfile {
 public:
 	using tstr = std::basic_string<TCHAR>;
-
 	CPrivateProfile() = default;
 	CPrivateProfile(tstr path);
 	virtual ~CPrivateProfile() = default;
@@ -31,16 +30,16 @@ public:
 	CPrivateProfile&operator=(const CPrivateProfile&) = default;
 	CPrivateProfile&operator=(CPrivateProfile&&) = default;
 
-	//! Sets Ini path name.
-	void path(tstr path);
+	//! Sets the Ini path name.
+	CPrivateProfile& path(tstr path);
 
-	//! Returns reference to Ini path name.
+	//! Gets the Ini path name.
 	const tstr&	path() const { return m_path; }
 
-	//! Sets section name.
-	void section(tstr section);
+	//! Sets the section name.
+	CPrivateProfile& section(tstr section);
 
-	//! Returns reference to the section name.
+	//! Gets the section name.
 	const tstr& section() const { return m_section; }
 
 	/*! Enumlates all section that is in the ini file.

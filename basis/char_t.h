@@ -2,10 +2,11 @@
 #ifndef GUID_528AE1BB7FB24BC5A32EDEFFF61AFC10
 #define GUID_528AE1BB7FB24BC5A32EDEFFF61AFC10
 
-#ifndef STDAFX
+#ifndef STDAFX_H
 #include <ctype.h>
 #include <wtypes.h>
 #endif
+#include "exception.h"
 
 namespace basis {
 
@@ -44,7 +45,7 @@ public:
 	int width() const { return (isSjisLeadByte()) ? 2 : 1; }
 #ifdef _UNICODE
 	wchar_t tchar() const {
-		char buf[2] = { m_c, NULL };
+		char buf[2] = { m_c, '\0' };
 		wchar_t str[2];
 		if (!MultiByteToWideChar(CP_THREAD_ACP, 0, buf, _countof(buf),
 			str, _countof(str)))
@@ -81,7 +82,7 @@ public:
 	wchar_t tchar() const { return m_c; }
 #else
 	char tchar() const {
-		wchar_t str[2] = { m_c, NULL };
+		wchar_t str[2] = { m_c, '\0' };
 		char buf[2];
 		if (!WideCharToMultiByte(CP_THREAD_ACP, 0, str, _countof(str),
 			buf, _countof(buf), 0, nullptr))

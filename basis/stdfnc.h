@@ -106,8 +106,8 @@ tstr GetCommandLine(int nCmd);
 tstr GetDropFile( WPARAM wp, UINT num = 0 );
 
 //! 指定されたフォントのうち最大の高さをかえす。
-/*!	第3引数がNULLの場合は第2引数の高さを、
-	第2引数もNULLの場合はカレントフォントの高さをかえす。
+/*!	第3引数が0の場合は第2引数の高さを、
+	第2引数も0の場合はカレントフォントの高さをかえす。
 */
 LONG GetFontHeight( HDC hdc, HFONT lhs, HFONT rhs );
 

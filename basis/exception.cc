@@ -34,7 +34,7 @@ std::string TranslateErrorCode(DWORD dwLastError)
 
 	if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM
 		| FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, dwLastError, 0, buf, size, NULL))
+		nullptr, dwLastError, 0, buf, size, nullptr))
 		return "";
 
 	std::string message(buf);

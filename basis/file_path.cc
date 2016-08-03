@@ -148,7 +148,7 @@ trash() const noexcept
 
 	CComPtr<IFileOperation> op;
 	if (S_OK != CoCreateInstance(
-		CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&op)))
+		CLSID_FileOperation, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&op)))
 		return false;
 
 	if (S_OK != op->DeleteItem(pItem, nullptr))

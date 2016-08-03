@@ -1,5 +1,5 @@
 #pragma once
-#ifndef STDAFX
+#ifndef STDAFX_H
 #include <wtypes.h>
 #include <Psapi.h> // PROCESS_MEMORY_COUNTERS
 #endif
@@ -9,18 +9,17 @@ namespace basis {
 // プロセスのメモリ使用量を取得
 class ProcessMemoryStatus : public PROCESS_MEMORY_COUNTERS {
 public:  // 構造体のクラス化
-	ProcessMemoryStatus(int unit = 1)
-		: PROCESS_MEMORY_COUNTERS({ sizeof(PROCESS_MEMORY_COUNTERS) })
-	{
-		m_process = OpenProcess(PROCESS_QUERY_INFORMATION, 0,
-			GetCurrentProcessId());
-		m_unit = unit;
-	};
+	ProcessMemoryStatus(int unit = 1) : m_unit((std::max)(unit, 1)), m_process(0),
+		PROCESS_MEMORY_COUNTERS({ sizeof(PROCESS_MEMORY_COUNTERS) })
+	{};
 	~ProcessMemoryStatus() {
-		CloseHandle(m_process);
+		m_process && CloseHandle(m_process);
 	}
 	bool update() {
-		return FALSE != GetProcessMemoryInfo(m_process, this, cb);
+        if (m_process || (m_process = OpenProcess(PROCESS_QUERY_INFORMATION, 0,
+                GetCurrentProcessId())) != 0)
+ 		    return FALSE != GetProcessMemoryInfo(m_process, this, cb);
+        return false;
 	}
 	size_t usage() { return WorkingSetSize / m_unit; }
 private:

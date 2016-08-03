@@ -81,8 +81,11 @@ public:
 	HFONT resetFont();
 	int getFontHeight();
 
-	//! Return size, width and height, of the Device Context. 
+	//! Returns width and height of the Device Context Bitmap. 
 	Size getSize() const noexcept;
+
+    //! Returns estimated memory usage in bytes.
+    size_t usage() const;
 
 	/*! Sets new bitmap as current.
 		Previous bitmap would be released.

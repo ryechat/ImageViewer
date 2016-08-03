@@ -1,11 +1,11 @@
-#include "thread_unity.h"
-#include "critical_section.h"
-
 #ifndef STDAFX_H
 #include <memory>
 #include <vector>
 #include <list>
+#include <assert.h>
 #endif
+#include "critical_section.h"
+#include "thread_unity.h"
 
 namespace basis {
 
@@ -32,13 +32,14 @@ public:
 void CThreadUnity::Impl::
 setThreadCount(int nThreads)
 {
+    assert(nThreads >= 0);
 	CriticalSection cs = m_cs.local();
-	while (m_threads.size() > nThreads) {
+	while (m_threads.size() > static_cast<size_t>(nThreads)) {
 		m_threads.back()->wait(INFINITE);
 		m_threads.pop_back();
 		m_signals.pop_back();
 	}
-	while (m_threads.size() < nThreads) {
+	while (m_threads.size() < static_cast<size_t>(nThreads)) {
 		m_threads.emplace_back(new CThread);
 		m_signals.push_back(m_threads.back()->getWaitHandle());
 	}

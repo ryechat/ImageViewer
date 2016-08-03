@@ -110,7 +110,7 @@ public:
 
 	/*! Unlock memory and return its handle.
 		It makes memory address become invalid.
-		@return Handle if succeeded, or NULL.
+		@return Handle. It may be 0 if failed.
 	*/
 	HGLOBAL handle() noexcept;
 
@@ -189,9 +189,7 @@ public:
 private:
 	void reset(void *p, size_t s) noexcept;
 
-#ifdef _DEBUG
 	static size_t mTotalAmount;
-#endif
 	CriticalSection m_cs;
 	size_t m_size;
 	void *m_buf;

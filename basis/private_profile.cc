@@ -17,18 +17,20 @@ CPrivateProfile(tstr path)
 
 
 
-void CPrivateProfile::
+CPrivateProfile& CPrivateProfile::
 path(tstr path)
 {
 	m_path = std::move(path);
+    return *this;
 }
 
 
 
-void CPrivateProfile::
+CPrivateProfile& CPrivateProfile::
 section(tstr sectionname)
 {
 	m_section = std::move(sectionname);
+    return *this;
 }
 
 
@@ -82,9 +84,9 @@ do_read(const TCHAR *section, const TCHAR *name, const TCHAR *def)
 				return true;
 
 			// getAll~ functionでひとつも見つからなかった場合、
-			// NULL は最後のひとつしか付加されないので、補う。
+			// 終端文字は最後のひとつしか付加されないので、補う。
 			if (capacity >= 2) {
-				m_buf.data()[1] = NULL;
+				m_buf.data()[1] = TEXT('\0');
 				return true;
 			}
 		}
@@ -133,7 +135,7 @@ bool CPrivateProfile::
 isInvalid(const TCHAR *name)
 {
 	return (m_path.empty() || m_section.empty()
-		|| name == nullptr || *name == NULL);
+		|| name == nullptr || *name == TEXT('\0'));
 }
 
 }  // namespace

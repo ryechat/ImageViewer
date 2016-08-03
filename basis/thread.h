@@ -65,7 +65,7 @@ public:
 		to be negative value, this function returns control
 		when the thread is suspended regardless the time.
 	*/
-	bool wait(int timeToWait) noexcept;
+	bool wait(int timeToWait) const noexcept;
 
 	//! Returns true if the thread is running.
 	//! This function returns !wait(0).

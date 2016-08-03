@@ -36,8 +36,8 @@ public:
 		set(added);
 	}
 
-	//! Waits specified event signaled.
-	bool wait(stat s, DWORD t = INFINITE) noexcept {
+	//! Waits specified event to be signaled.
+	bool wait(stat s, DWORD t = INFINITE) const noexcept {
 		return WaitForSingleObject(h[s], t)	!= WAIT_TIMEOUT;
 	}
 
@@ -156,7 +156,7 @@ void CThread::addTask(TaskTy f)
 
 
 
-bool CThread::wait(int time) noexcept
+bool CThread::wait(int time) const noexcept
 {
 	DWORD t = time < 0 ? INFINITE : static_cast<DWORD>(time);
 	return impl ? impl->wait(impl->ended, t) : true;
@@ -168,14 +168,14 @@ bool CThread::wait(int time) noexcept
 
 HANDLE CThread::getWaitHandle()
 {
-	return impl ? impl->h[impl->ended] : NULL;
+	return impl ? impl->h[impl->ended] : nullptr;
 }
 
 
 
 HANDLE CThread::getThreadHandle()
 {
-	return impl ? impl->h[impl->thread] : NULL;
+	return impl ? impl->h[impl->thread] : nullptr;
 }
 
 }  // namespace

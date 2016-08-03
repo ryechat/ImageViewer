@@ -204,7 +204,7 @@ private:
 #define UNIT_TEST_FUNC(hoge) bool TEST_##hoge##::test()
 
 /*! @class hoge
-	Argument name for certain macros.
+	Dummy name for certain macros.
 */
 
 #endif

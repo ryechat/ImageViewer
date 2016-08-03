@@ -24,7 +24,7 @@ close() try
 	finish();
 	if (*this)
 		CloseHandle(m_h);
-	m_h = NULL;
+	m_h = nullptr;
 	return true;
 }
 catch (...) {
@@ -38,7 +38,7 @@ CFileItem(CFileItem && s)
 	: m_h(s.m_h), m_overlapped(s.m_overlapped),
 	m_offset(s.m_offset)
 {
-	s.m_h = 0;
+	s.m_h = nullptr;
 	s.m_overlapped = nullptr;
 }
 
@@ -48,7 +48,7 @@ CFileItem& CFileItem::
 operator=(CFileItem &&s)
 {
 	m_h = s.m_h;
-	s.m_h = NULL;
+	s.m_h = nullptr;
 	m_overlapped = s.m_overlapped;
 	s.m_overlapped = nullptr;
 	return *this;

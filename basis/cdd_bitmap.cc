@@ -35,7 +35,7 @@ namespace
 		ip.get_Width(&dxSrc);
 		ip.get_Height(&dySrc);
 		ip.Render(dest, 0, 0, s.x, s.y,
-			0, dySrc, dxSrc, -dySrc, NULL);
+			0, dySrc, dxSrc, -dySrc, nullptr);
 		// src側のサイズはHIMETRIC単位。
 		// さらに基準点は下からで、高さは負の値になる
 	}

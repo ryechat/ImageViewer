@@ -83,7 +83,8 @@ brush(HGDIOBJ h) const noexcept
 
 
 
-bool Surface::rectangle(const Rect & rc) const noexcept
+bool Surface::
+rectangle(const Rect & rc) const noexcept
 {
 	return 0 != Rectangle(m_h, rc.left, rc.top, rc.right, rc.bottom);
 }
@@ -130,6 +131,16 @@ getSize() const noexcept
 {	// Null if error
 	return getSize(static_cast<HBITMAP>(
 		GetCurrentObject(m_h, OBJ_BITMAP)));
+}
+
+
+
+size_t Surface::
+usage() const
+{
+    Size size = getSize();
+    return GetDeviceCaps(m_h, BITSPIXEL) * GetDeviceCaps(m_h, PLANES) / 8 *
+        size.x * size.y;
 }
 
 

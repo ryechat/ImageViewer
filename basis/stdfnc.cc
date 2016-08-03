@@ -63,7 +63,7 @@ PTSTR GetTypeFormat(TCHAR type[5], size_t bytes, TCHAR d_x)
 
 	*type = _T('%');
 	*++p = d_x;
-	*++p = NULL;
+	*++p = _T('\0');
 	return type;
 }
 
@@ -71,7 +71,7 @@ PTSTR GetTypeFormat(TCHAR type[5], size_t bytes, TCHAR d_x)
 
 tstr ToStr(int64_t n)
 {
-	TCHAR sz[17]{ NULL }; // 64bitÇÕ15ï∂éö+ïÑçÜ+\0
+	TCHAR sz[17]{ _T('\0') }; // 64bitÇÕ15ï∂éö+ïÑçÜ+\0
 	if (_stprintf_s(sz, TEXT("%lld"), n) < 0)
 		throw 0;
 	return tstr(sz);

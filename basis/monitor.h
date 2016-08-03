@@ -9,16 +9,15 @@ namespace basis {
 UNIT_TEST(Monitor)
 
 /*! Monitor class.
-	@par About virtual screen coordinates.
-	The origin point (0, 0) of virtual screen coordinates
-	is left-top of a primary window.
-	All windows placed left or above primary window should
+	@par In virtual screen coordinates,
+	its origin point (0, 0) is left-top of a primary window.
+	All windows placed left or above of primary window should
 	have negative coordinates.
-	Note that if a window is size of 1024x768,
-	the coordinate (1024, 768) is NOT available
+	Note that if a window is of 1024x768 size,
+	the coordinate (1024, 768) is not included,
 	because horizontal coordinates is from 0 to 1023.
-	GDI functions, though, accepts like rectangle(0, 0, 1024, 768)
-	and it will paint at rectangle(0, 0, 1023, 767)
+	GDI functions, though, accepts rectangle(0, 0, 1024, 768)
+	and it will paint rectangle at (0, 0, 1023, 767)
 	ignoring right and bottom end of the rectangle.
 */
 class Monitor {
@@ -44,8 +43,7 @@ public:
 	bool isPrimary();
 
 	/*! Return rectangle of display monitor.
-		If monitor is not selected; handle is NULL,
-		returns rectangle of privary monitor instead.
+		If monitor is not selected, rectangle of privary monitor will be returned.
 	*/
 	Rect getRect();
 
@@ -59,6 +57,12 @@ public:
 	std::basic_string<TCHAR> getName();
 
 private:
+    static BOOL CALLBACK proc(
+        HMONITOR hMonitor,  // ディスプレイモニタのハンドル
+        HDC hdcMonitor,     // モニタに適したデバイスコンテキストのハンドル
+        LPRECT lprcMonitor, // モニタ上の交差部分を表す長方形領域へのポインタ
+        LPARAM dwData       // EnumDisplayMonitors から渡されたデータ
+        );
 	MONITORINFO getMonitorInfo();
 	HMONITOR m_h;
 };

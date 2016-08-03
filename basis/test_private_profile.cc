@@ -25,14 +25,14 @@ UNIT_TEST_FUNC(CPrivateProfile)
 		throw 0;
 
 	// バッファ有効性の確認
-	if (*prof.c_str() != NULL)
+	if (*prof.c_str() != _T('\0'))
 		throw 0;
 
 	// バッファの再確保できるか確認
 	if (file->path() != prof.read(0, file->path().c_str()))
 		throw 0;
 
-	// NULL*2
+	// 終端文字が２つついてるか？
 	if (prof.getAllSectionNames() == false)
 		throw 0;
 	if (*prof.c_str() || *(prof.c_str() + 1))
@@ -51,7 +51,6 @@ UNIT_TEST_FUNC(CPrivateProfile)
 	if (prof.c_str()[0] != _T('k'))
 		throw 0;
 
-	// NULL*2
 	if (*(prof.c_str() + 1) || *(prof.c_str() + 2))
 		throw 0;
 
@@ -60,7 +59,6 @@ UNIT_TEST_FUNC(CPrivateProfile)
 	if (prof.c_str()[0] != _T('s'))
 		throw 0;
 
-	// NULL*2
 	if (*(prof.c_str() + 1) || *(prof.c_str() + 2))
 		throw 0;
 

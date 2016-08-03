@@ -44,7 +44,7 @@ Monitor Monitor::GetPrimary()
 
 Rect Monitor::GetVirtualScreen()	// static
 {
-	// Virtual screen is not available for Win95
+	// Virtual screen is not available on Win95
 	RECT rc{ 0, 0, GetSystemMetrics(SM_CXVIRTUALSCREEN) };
 	if (rc.right) {
 		rc.left = GetSystemMetrics(SM_XVIRTUALSCREEN);

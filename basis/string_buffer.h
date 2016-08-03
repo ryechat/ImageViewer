@@ -12,9 +12,8 @@ namespace basis {
 
 UNIT_TEST(StringBuffer)
 
-
-/*! String class aimed to cooperate with APIs.
-	It is a container of null terminated string.
+/*! String class is a buffer aimed to cooperate with APIs.
+	It can contain null terminated string.
 	Although it needs to count its size in every functions,
 	it is capable to return a non-const pointer to data.
 	This object can contain a pointer to string both of dynamic or static.
@@ -118,11 +117,6 @@ public:
 	//! May throw if any error rose.
 	void realloc(size_t s);
 
-	//! ReAllocates a buffer. Contents will be lost.
-	/*! If first parameter was NULL,
-		then doubled size of memory at that point would be used instead.
-	*/
-
 	/*	Releases a string and allocate another buffer.
 		If a parameter was set to be 0,
 		this function makes buffer size doubled.
@@ -202,11 +196,11 @@ public:
 
 	/*! Adds a string.
 	*/
-	StringBuffer& append(const TCHAR *str, size_t n) {
-		return write(getSize(), str, n);
-	}
 	StringBuffer& append(const TCHAR *str) {
 		return write(getSize(), str, length(str));
+	}
+	StringBuffer& append(const TCHAR *str, size_t n) {
+		return write(getSize(), str, n);
 	}
 
 	/*! Overwrite by a string.
@@ -253,6 +247,7 @@ private:
 
 	TCHAR *m_p;
 	CMemory m_buf;
+    mutable size_t m_size; // npos if it's not known yet
 };
 
 }  // namespace

@@ -70,7 +70,7 @@ reset(HGLOBAL h, void* addr, BOOL lock) noexcept
 	// アンロック後、解放。失敗するとm_hはそのまま
 	if (m_h && m_h != h) {
 		m_h = GlobalFree(handle());
-		m_h = NULL;	// 少なくとも自分でロックした分はアンロックしてる
+		m_h = nullptr;	// 少なくとも自分でロックした分はアンロックしてる
 	}
 	m_h = h;
 	m_address = addr;
@@ -105,21 +105,21 @@ capacity() const
 
 // ハンドルが生きているかをチェックし、
 // アンロック済みのハンドルを返す。
-// 不可またはエラーでNULLをかえす
+// 不可またはエラーで0をかえす
 HGLOBAL GlobalMemory::
 handle() noexcept
 {
 	CriticalSection cs = m_cs.local();
 
-	if (m_h == NULL) return NULL;
+	if (m_h == nullptr) return nullptr;
 
 	// ハンドルが死んでいないか？
 	UINT uFlags = GlobalFlags(m_h);
 	if (uFlags == GMEM_INVALID_HANDLE)
-		return NULL;
+		return nullptr;
 
 	// ロックカウントにかかわらずアドレスを放棄する
-	m_address = NULL;
+	m_address = nullptr;
 
 	// アンロックしたメモリのハンドルを返す
 	if (m_lock_count) {
@@ -127,7 +127,7 @@ handle() noexcept
 		// ロックカウント減算してなおロックされていれば非 0を返す
 		if (GlobalUnlock(m_h)) {
 			m_lock_count--;
-			return NULL;
+			return nullptr;
 		}
 		DWORD le = GetLastError();
 		if (le == NO_ERROR || le == ERROR_NOT_LOCKED) {
@@ -135,11 +135,11 @@ handle() noexcept
 			return m_h;
 		}
 		// 減算そのものも失敗すると 戻り値は0で上記以外のError code を吐く
-		return NULL;
+		return nullptr;
 	}
 
 	// 自分でロックしてない場合は、アンロックされてるかどうかを返す
-	return ((uFlags & 0xFF) == 0) ? m_h : NULL;
+	return ((uFlags & 0xFF) == 0) ? m_h : nullptr;
 }
 
 
@@ -159,7 +159,7 @@ lock() const
 
 	// 関数失敗
 	if (m_address == m_h) {
-		m_address = NULL;
+		m_address = nullptr;
 		std::runtime_error(LOCATION);
 	}
 

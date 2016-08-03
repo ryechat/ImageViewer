@@ -6,41 +6,61 @@
 #endif
 
 namespace basis {
-	
-void WindowHook::
-push_front(IEventHandler *p)
-{
-	if (!exist(p))
-		eventHandlers.push_front(p);
-}
+
+
 
 void WindowHook::
-push_back(IEventHandler *p)
+push(IEventHandler * p)
 {
-	if (!exist(p))
-		eventHandlers.push_back(p);
+    if (p && !exist(p))
+        listeners.push_front({ p, {} });
 }
+
+
+
+void WindowHook::
+push(Function f)
+{
+    listeners.push_front({ nullptr, std::move(f) });
+}
+
+
 
 void WindowHook::
 unhook(IEventHandler *p)
 {
-	eventHandlers.remove(p);
+    if (!p) return;
+
+    auto i = listeners.begin();
+    while (i != listeners.end()) {
+        if (i->first == p)
+            i = listeners.erase(i);
+        else
+            ++i;
+    }
 }
+
+
 
 void WindowHook::
 clear()
 {
-	eventHandlers.clear();
+	listeners.clear();
 }
 
-// ”ñ‚O‚ð‚©‚¦‚·‚Ü‚ÅƒŠƒXƒi‚ð‡‚ÉŒÄ‚Ño‚·
+
+
 int WindowHook::
 dispatch(Window *win, Message msg, WPARAM wp, LPARAM lp) const
 {
-	for (auto i : eventHandlers) {
-		int lr = i->onEvent(win, msg, wp, lp);
-		if (lr)
-			return lr;
+    int ret;
+	for (auto &i : listeners) {
+        if (i.first)
+            ret = i.first->onEvent(win, msg, wp, lp);
+        else
+            ret = i.second(win, msg, wp, lp);
+        if (ret)
+            return ret;
 	}
 	return 0;
 }
@@ -50,8 +70,8 @@ dispatch(Window *win, Message msg, WPARAM wp, LPARAM lp) const
 bool WindowHook::
 exist(const IEventHandler *p) const
 {
-	return std::any_of(eventHandlers.cbegin(), eventHandlers.cend(),
-		[p](const IEventHandler *h) { return (h == p); }
+	return p && std::any_of(listeners.cbegin(), listeners.cend(),
+		[p](const Element& e) { return (e.first == p); }
 	);
 }
 

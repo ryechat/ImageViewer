@@ -194,11 +194,6 @@ public:
 	int width() const { return right - left; }
 	int height() const { return bottom - top; }
 
-	POINT begin() const { return{ left, top }; }
-	POINT end() const { return{ right, bottom }; }
-	void begin(const POINT &pt) { left = pt.x; top = pt.y; }
-	void end(const POINT &pt) { right = pt.x; bottom = pt.y; }
-
 private:
 	// Swaps to be l < r. returns l != r
 	inline bool validate(int &l, int &r, int &t) {

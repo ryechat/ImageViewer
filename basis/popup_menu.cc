@@ -73,7 +73,7 @@ void CPopupMenu::insert(int id_pos, CPopupMenu& submenu, const TCHAR *str)
 		throw api_runtime_error();
 	}
 
-	submenu.m_h = NULL;	// ƒnƒ“ƒhƒ‹‚ð“n‚µ‚½
+	submenu.m_h = nullptr;	// ƒnƒ“ƒhƒ‹‚ð“n‚µ‚½
 }
 
 

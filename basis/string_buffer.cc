@@ -16,12 +16,14 @@ CharLimit = (std::numeric_limits<size_t>::max)() / sizeof(TCHAR);
 
 StringBuffer::
 StringBuffer(size_t max_buf, const TCHAR *src)
-: m_p(0)
+: m_p(0), m_size(npos)
 {
 	if (max_buf || !src) {
 		alloc(max_buf ? max_buf : 1);
-		if (!src || copy(m_p, capacity(), src, 0))
-			return;
+        if (!src || copy(m_p, capacity(), src, 0)) {
+            m_size = npos;
+            return;
+        }
 	}
 	else if (src) {
 		m_p = const_cast<TCHAR*>(src);
@@ -36,7 +38,8 @@ StringBuffer(size_t max_buf, const TCHAR *src)
 StringBuffer& StringBuffer::
 operator=(const TCHAR *src)
 {
-	alloc(length(src) + 1);
+    m_size = length(src);
+	alloc(m_size + 1);
 	if (copy(m_p, capacity(), src, capacity()))
 		return *this;
 	throw std::runtime_error(LOCATION);
@@ -60,6 +63,7 @@ const TCHAR *StringBuffer::
 refer(const TCHAR *s)
 {
 	m_buf.reset();
+    m_size = npos;
 	return m_p = const_cast<TCHAR*>(s);
 }
 
@@ -68,6 +72,7 @@ refer(const TCHAR *s)
 TCHAR *StringBuffer::
 data()
 {
+    m_size = npos;
 	if (capacity()) return m_p;
 	throw std::logic_error(LOCATION);
 }
@@ -80,6 +85,7 @@ resize(size_t s)
 	if (!capacity() && !s)
 		throw std::logic_error(LOCATION);
 
+    m_size = npos;
 	if (s == 0) // Doubles capacity.
 		s = (capacity() > CharLimit / 2) ? CharLimit : capacity() * 2;
 
@@ -89,7 +95,8 @@ resize(size_t s)
 
 
 
-void StringBuffer::let(size_t s)
+void StringBuffer::
+let(size_t s)
 {
 	if (capacity() < s)
 		realloc(s);
@@ -101,9 +108,9 @@ size_t inline
 StringBuffer::
 getSize() const noexcept
 {
-	if (capacity())
-		return length(m_p, capacity());
-	return length(m_p);
+    if (m_size == npos)
+        m_size = capacity() ? length(m_p, capacity()) : length(m_p);
+    return m_size;
 }
 
 
@@ -131,6 +138,7 @@ realloc(size_t s)
 	if (!m_buf.realloc(s * sizeof(TCHAR)))
 		throw std::bad_alloc();
 
+    m_size = npos;
 	m_p = static_cast<PTSTR>(m_buf.address());
 }
 
@@ -139,7 +147,7 @@ realloc(size_t s)
 bool StringBuffer::
 empty() const noexcept
 {
-	return (!m_p || *m_p == NULL);
+	return (!m_p || *m_p == _T('\0'));
 }
 
 
@@ -147,13 +155,15 @@ empty() const noexcept
 void StringBuffer::
 flush() noexcept
 {
-	if (m_p)
-		SecureZeroMemory(m_p, capacity());
+    assert(m_p);
+    m_size = npos;
+    SecureZeroMemory(m_p, capacity());
 }
 
 
 
-bool StringBuffer::compare(const TCHAR *p, size_t n, size_t pos) const noexcept
+bool StringBuffer::
+compare(const TCHAR *p, size_t n, size_t pos) const noexcept
 {
 	if (n == 0)
 		n = length(p);
@@ -217,9 +227,11 @@ StringBuffer& StringBuffer::
 write(size_t pos, const TCHAR *str, size_t n)
 {
 	let(pos + n + 1);
-	for (size_t i = 0; (m_p[pos + i] = str[i]) != NULL; i++) {
+    m_size = npos;
+	for (size_t i = 0; (m_p[pos + i] = str[i]) != _T('\0'); i++) {
 		if (i == n - 1) {
-			m_p[pos + n] = NULL;
+            m_size = pos + n;
+            m_p[m_size] = _T('\0');
 			break;
 		}
 	}
@@ -240,55 +252,15 @@ count(size_t cb) const
 
 
 
-/*	Static Member Functions	*/
-
-
-
-
-
-size_t StringBuffer::
-length(const TCHAR *str, size_t cap) noexcept(true)
+void StringBuffer::
+alloc(size_t size) try
 {
-	if (cap)
-		return str ? _tcsnlen(str, cap) : 0;
-	else
-		return str ? _tcslen(str) : 0;
-}
-
-
-
-bool StringBuffer::
-copy(TCHAR *buf, size_t cap_buf, const TCHAR *str, size_t cap_str) noexcept
-{
-	if (!buf)
-		return false;
-
-	if (str == nullptr) {
-		*buf = NULL;
-		return true;
-	}
-
-	if (cap_str == 0)
-		cap_str = length(str) + 1;
-
-	if (cap_buf < cap_str)
-		return false;
-
-	return (_tcscpy_s(buf, cap_buf, str) == 0);
-}
-
-
-
-void StringBuffer::alloc(size_t size) try
-{
-	if (!m_buf.alloc(size * sizeof(TCHAR), false))
-		throw 0;
+    m_buf.alloc(size * sizeof(TCHAR), false);
 	m_p = static_cast<TCHAR*>(m_buf.address());
-	*m_p = NULL;
+	*m_p = _T('\0');
+    m_size = 0;
 }
 catch (...) {
-	m_p = nullptr;
-	m_buf.reset();
 	throw std::bad_alloc();
 }
 
@@ -314,6 +286,43 @@ toUTF16() const
 	free(wide);
 	return str;
 #endif
+}
+
+
+
+/*	Static Member Functions	*/
+
+
+
+size_t StringBuffer::
+length(const TCHAR *str, size_t cap) noexcept(true)
+{
+    if (cap)
+        return str ? _tcsnlen(str, cap) : 0;
+    else
+        return str ? _tcslen(str) : 0;
+}
+
+
+
+bool StringBuffer::
+copy(TCHAR *buf, size_t cap_buf, const TCHAR *str, size_t cap_str) noexcept
+{
+    if (!buf)
+        return false;
+
+    if (str == nullptr) {
+        *buf = _T('\0');
+        return true;
+    }
+
+    if (cap_str == 0)
+        cap_str = length(str) + 1;
+
+    if (cap_buf < cap_str)
+        return false;
+
+    return (_tcscpy_s(buf, cap_buf, str) == 0);
 }
 
 }  // namespace
