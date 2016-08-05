@@ -510,7 +510,7 @@ onPaint()
 	else {
 		Rect image_rect;
 		if (!filer->isEmpty())
-			image_rect = filer->current()->get()->getRect();
+			image_rect = filer->current()->get()->rect();
 		Size drawing_size = getDrawSize(image_rect.size());
 
 		Rect src = { 0, 0, drawing_size.x, drawing_size.y };
@@ -537,7 +537,7 @@ getDrawRect() const
 {
 	if (filer->isEmpty())
 		return{};
-	return getDrawRect(getDrawSize(filer->current()->get()->getSize()));
+	return getDrawRect(getDrawSize(filer->current()->get()->size()));
 }
 
 
@@ -546,9 +546,9 @@ basis::Rect CImageViewer::
 getDrawRect(const Size &size) const
 {
 	Rect rc{ 0, 0, size.x, size.y };
-	rc.slide(m_offset);
+	rc.move(m_offset);
 	if (menu->isSelected(ID::VIEW_CENTER))
-		rc.slide((getClientSize() - size) / 2);
+		rc.move((getClientSize() - size) / 2);
 	return rc;
 }
 

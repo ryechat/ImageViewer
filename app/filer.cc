@@ -130,8 +130,8 @@ search(std::function<bool(Element&)> func)
 	assert(func);
 	iterator itr = begin();
 
-    while (itr != end())
-        if (func(*(itr++)))
+    for (; itr != end(); ++itr)
+        if (func(*itr))
             break;
 
 	return itr;

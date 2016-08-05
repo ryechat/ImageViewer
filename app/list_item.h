@@ -62,8 +62,8 @@ public:
     //! ロード済みであれば対象のデバイスコンテキストに描画する
     bool draw(HDC hdc, const RECT& destination, const RECT& source);
 
-    basis::Size	getSize() const; //!< 画像サイズを返す
-    basis::Rect getRect() const; //!< 始点0,0の画像矩形を返す
+    basis::Size	size() const; //!< 画像サイズを返す
+    basis::Rect rect() const; //!< 始点0,0の画像矩形を返す
 
     FILETIME ftAccess() const;
     FILETIME ftCreate() const;

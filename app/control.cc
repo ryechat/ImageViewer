@@ -13,11 +13,11 @@
 namespace image_viewer {
 
 CImageViewer::Control::Control(CImageViewer &parent_)
-	: parent(parent_), m_bGripImage(0), m_bDragList(0)
+    : parent(parent_), m_bGripImage(0), m_bDragList(0)
 {
-	parent.hook(this);
-	wheel.setUnit(WHEEL_DELTA);
-	if (loadKeyCommands() == false)
+    parent.hook(this);
+    wheel.setUnit(WHEEL_DELTA);
+    if (loadKeyCommands() == false)
         MessageBox(0, TEXT("There's no key settings in INI."
             "Please set your prefer settings in the file."),
             TEXT("Failed to load key settings."), MB_OK);
