@@ -1,5 +1,6 @@
 #include "surface.h"
 #include "window.h"
+#include "exception.h"
 #include "stdfnc.h"
 
 #ifndef ARG_POS_SIZE
@@ -20,6 +21,7 @@ void Surface::reset(HDC hdc) noexcept
 	if (m_h && m_default != reinterpret_cast<HBITMAP>(-1)) {
 		DeleteDC(m_h);
 	}
+    m_size.reset();
 	m_h = hdc;
 }
 
@@ -38,11 +40,17 @@ create(HDC src, Size s)
 
 
 bool Surface::
+isCompatible(HDC hdc)
+{
+    return GetDeviceCaps(m_h, BITSPIXEL) == GetDeviceCaps(hdc, BITSPIXEL);
+}
+
+
+
+bool Surface::
 compatible(HDC hdc, Size s)
 {
-	Size size = getSize();
-	if (!m_h || size.x < s.x || size.y < s.y ||
-		GetDeviceCaps(hdc, BITSPIXEL) != GetDeviceCaps(m_h, BITSPIXEL)) {
+    if (!isCompatible(hdc) || size().x < s.x || m_size.y < s.y ) {
 		create(hdc, s);
 		return true;
 	}
@@ -127,10 +135,12 @@ getFontHeight()
 
 
 Size Surface::
-getSize() const noexcept
-{	// Null if error
-	return getSize(static_cast<HBITMAP>(
-		GetCurrentObject(m_h, OBJ_BITMAP)));
+size() const
+{
+    if (m_size.x)
+        return m_size;
+	return GetSize(static_cast<HBITMAP>(
+		GetCurrentObject(m_h, OBJ_BITMAP)));  // 0 if error
 }
 
 
@@ -138,21 +148,21 @@ getSize() const noexcept
 size_t Surface::
 usage() const
 {
-    Size size = getSize();
     return GetDeviceCaps(m_h, BITSPIXEL) * GetDeviceCaps(m_h, PLANES) / 8 *
-        size.x * size.y;
+        size().x * m_size.y;
 }
 
 
 
 Size Surface::
-getSize(HBITMAP h) noexcept
+GetSize(HBITMAP h)
 {
 	BITMAP bmp;
-	if (GetObject(h, sizeof bmp, &bmp))
-		return{ bmp.bmWidth, bmp.bmHeight };
-	else
-		return{ 0, 0 };
+    if (!GetObject(h, sizeof bmp, &bmp))
+        throw std::runtime_error(LOCATION);
+	
+    return{ static_cast<int>(bmp.bmWidth),
+        static_cast<int>(bmp.bmHeight) };
 }
 
 
@@ -161,18 +171,22 @@ bool Surface::
 setBitmap(HBITMAP hBmp)
 {
 	if (!hBmp)
-		throw 0;
+		return false;
+    Size s = GetSize(hBmp);
 
-	if (!m_h)
-		create(0, getSize(hBmp));
+    if (!m_h)
+		create(0, s);
 
 	HBITMAP ret = swapBitmap(hBmp);
+    if (ret == hBmp)
+        return false;
 
 	if (m_default)
 		DeleteObject(ret);
 	else
 		m_default = ret;
 
+    m_size = s;
 	return ret != hBmp;
 }
 

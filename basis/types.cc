@@ -7,6 +7,10 @@ Point::operator Size() const {
 	return Size(x, y);
 }
 
+Rect Size::toRect() {
+    return{ 0, 0, x, y };
+}
+
 Size::operator Point() const {
 	return{ x, y };
 }

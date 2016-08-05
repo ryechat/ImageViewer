@@ -136,18 +136,17 @@ draw(HDC dest, const RECT & rcDest, const RECT & rcSrc)
 
 
 basis::Size CListItem::
-getSize() const
+size() const
 {
-    return impl->m_image.getSize();
+    return impl->m_image.size();
 }
 
 
 
 basis::Rect CListItem::
-getRect() const
+rect() const
 {
-    auto size = getSize();
-    return{ 0, 0, size.x, size.y };
+    return{ 0, 0, size().x, size().y };
 }
 
 
