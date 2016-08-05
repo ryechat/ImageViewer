@@ -44,6 +44,8 @@ public:
 	*/
 	void create(HDC src, Size s);
 
+    bool isCompatible(HDC hdc);
+
 	/*! Ensures compatibility and minimum size.
 		Unless this object has the same src hdc
 		AND adequate size, this function will call create().
@@ -82,7 +84,7 @@ public:
 	int getFontHeight();
 
 	//! Returns width and height of the Device Context Bitmap. 
-	Size getSize() const noexcept;
+	Size size() const;
 
     //! Returns estimated memory usage in bytes.
     size_t usage() const;
@@ -94,14 +96,14 @@ public:
 
 	bool transfer(HDC hdc, const Rect&dest, const Rect& src) const;
 
-	static Size getSize(HBITMAP h) noexcept;
+	static Size GetSize(HBITMAP h);
 
 protected:
 	HBITMAP swapBitmap(HBITMAP hBmp);
 	void reset(HDC hdc) noexcept;
 private:
 	HDC m_h;
-
+    mutable Size m_size;
 	// Default bitmap. It must be set back before m_h deleted not to be leaked.
 	// Also, If it is -1, m_h is not necessary to be deleted.
 	HBITMAP m_default;

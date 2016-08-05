@@ -105,7 +105,7 @@ loadOleLoad(HGLOBAL hg)
 	if (ip->get_Handle(&hOle) || !hOle)
 		return false;
 
-	auto s = Surface::getSize(reinterpret_cast<HBITMAP>(LongToHandle(hOle)));
+	auto s = Surface::GetSize(reinterpret_cast<HBITMAP>(LongToHandle(hOle)));
 	create(temp, s);
 	copyRender(*ip, *this, s);
 

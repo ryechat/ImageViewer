@@ -10,6 +10,7 @@
 namespace basis {
 
 class Size;
+class Rect;
 
 class Point {
 public:
@@ -62,6 +63,9 @@ public:
 	Size& reset() {
 		x = 0, y = 0; return *this;
 	}
+
+    // [0, 0]Çénì_Ç∆Ç∑ÇÈRectÇê∂ê¨Ç∑ÇÈ
+    Rect toRect();
 };
 
 
@@ -75,8 +79,6 @@ public:
 
 	// Bans rect += int
 	explicit Rect(int l) : Rect(l, 0, 0, 0) {}
-
-	explicit operator bool() const { return !(left == right || top == bottom); }
 	operator RECT() const { return{ left, top, right, bottom }; }
 
 	bool operator==(const Rect &rhs) {
@@ -134,6 +136,19 @@ public:
 		return{ right, bottom };
 	}
 
+    bool isEmpty() const {
+        return left != right && top != bottom;
+    }
+
+    bool isValid() const {
+        return left <= right && top <= bottom;
+    }
+
+    Rect& reset() {
+        left = top = right = bottom = 0;
+        return *this;
+    }
+
 	/*! Swaps members to be validated rectangle.
 	This function makes sure that
 	left <= right && top <= bottom.
@@ -176,14 +191,14 @@ public:
 		return *this;
 	}
 
-	Rect& slide(int dx, int dy) {
+	Rect& move(int dx, int dy) {
 		left += dx, right += dx;
 		top += dy, bottom += dy;
 		return *this;
 	}
 
-	Rect& slide(const Size &s) {
-		return slide(s.x, s.y);
+	Rect& move(const Size &s) {
+		return move(s.x, s.y);
 	}
 
 	bool empty() const {
@@ -205,8 +220,6 @@ private:
 		return true;
 	}
 };
-
-
 
 const Size operator*(const Size &s, double d);
 const Size operator*(double d, const Size &s);
