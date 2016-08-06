@@ -28,98 +28,95 @@ CImageViewer::Control::Control(CImageViewer &parent_)
 int CImageViewer::Control::
 onEvent(Window *win, Message msg, WPARAM wp, LPARAM lp)
 {
-	switch (msg) {
+    switch (msg) {
 
-	case WM::KEYDOWN: {
- 		const ID cmd = getCommand(wp);
-		if (cmd == ID::UNDEFINED)
-			return 0;
-		const bool key_repeat = (lp & 0x40000000) != 0;
-		if (!key_repeat
-			|| cmd == ID::FILE_BACK || cmd == ID::FILE_NEXT)
-			return parent.broadcast(WM::COMMAND, static_cast<WPARAM>(cmd), 0);
-		return 1;
-	}
+    case WM::KEYDOWN: {
+        const ID cmd = getCommand(wp);
+        if (cmd == ID::UNDEFINED)
+            return 0;
+        const bool key_repeat = (lp & 0x40000000) != 0;
+        if (!key_repeat
+            || cmd == ID::FILE_BACK || cmd == ID::FILE_NEXT)
+            return delegateCommand(cmd);
+        return 1;
+    }
 
-	case WM::KEYUP:
-		if (getCommand(wp) == ID::GRIP_IMAGE) {
-			return parent.broadcast(WM::COMMAND,
-				static_cast<WPARAM>(ID::UNGRIP_IMAGE), 0);
-		}
-		return 0;
+    case WM::KEYUP:
+        if (getCommand(wp) == ID::GRIP_IMAGE) {
+            return delegateCommand(ID::UNGRIP_IMAGE);
+        }
+        return 0;
 
-	case WM::COMMAND: {
-		switch (static_cast<ID>(LOWORD(wp))) {
-		case ID::GRIP_IMAGE:
-			m_bGripImage = true;
-			return 1;
-		case ID::UNGRIP_IMAGE:
-			m_bGripImage = false;
-			return 1;
-		default:
-			return 0;
-		}
-	}
+    case WM::COMMAND: {
+        switch (static_cast<ID>(LOWORD(wp))) {
+        case ID::GRIP_IMAGE:
+            m_bGripImage = true;
+            return 1;
+        case ID::UNGRIP_IMAGE:
+            m_bGripImage = false;
+            return 1;
+        default:
+            return 0;
+        }
+    }
 
-	case WM::LBUTTONDBLCLK:
-		mouse.proc(*win, msg, wp, lp);
-		parent.onCommand(static_cast<WPARAM>(ID::SCREEN_TOGGLE));
-		return 1;
+    case WM::LBUTTONDBLCLK:
+        mouse.proc(*win, msg, wp, lp);
+        return delegateCommand(ID::SCREEN_TOGGLE);
 
-	case WM::LBUTTONUP:
-	case WM::RBUTTONUP:
-		ReleaseCapture();
-		// fall through
-	case WM::RBUTTONDBLCLK:
-	case WM::LBUTTONDOWN:
-	case WM::RBUTTONDOWN:
-		if (!mouse.proc(*win, msg, wp, lp))
-			return 1;
+    case WM::LBUTTONUP:
+    case WM::RBUTTONUP:
+        ReleaseCapture();
+        // fall through
+    case WM::RBUTTONDBLCLK:
+    case WM::LBUTTONDOWN:
+    case WM::RBUTTONDOWN:
+        if (!mouse.proc(*win, msg, wp, lp))
+            return 1;
 
         if (msg == WM::LBUTTONUP && !mouse.isDragged())
             return onLButtonClick();
 
-		if (msg == WM::LBUTTONDOWN) {
-			mouse.threshold(5);
-			SetCapture(parent);
+        if (msg == WM::LBUTTONDOWN) {
+            mouse.threshold(5);
+            SetCapture(parent);
             m_bDragList = parent.list->isInclusive(mouse.start());
-			return 1;
-		}
+            return 1;
+        }
 
-		if (mouse.vkey() == VK_RBUTTON) {
-			if (mouse.state() & mouse.BUTTON_DOWN) {
-				mouse.threshold(30, 30);
-				hFlip.reset(0);
-				hFlip.setUnit(30);
-				vFlip.reset(0);
-				vFlip.setUnit(30);
-				return 1;
-			}
-			if (!mouse.isDragged()) {
-				parent.menu->track(win->getClientRectInScreen().lefttop() + mouse.pos());
-				return 1;
-			}
-		}
-		return 1;
+        if (mouse.vkey() == VK_RBUTTON) {
+            if (mouse.state() & mouse.BUTTON_DOWN) {
+                mouse.threshold(30, 30);
+                hFlip.reset(0);
+                hFlip.setUnit(30);
+                vFlip.reset(0);
+                vFlip.setUnit(30);
+                return 1;
+            }
+            if (!mouse.isDragged()) {
+                parent.menu->track(win->getClientRectInScreen().lefttop() + mouse.pos());
+                return 1;
+            }
+        }
+        return 1;
 
-	case WM::MOUSEMOVE:
-		return onMouseMove(win, msg, wp, lp);
+    case WM::MOUSEMOVE:
+        return onMouseMove(win, msg, wp, lp);
 
-	case WM::MOUSEWHEEL: {
-		// 回数分だけカレントを移動する
-		int n;
-		wheel.add(-GET_WHEEL_DELTA_WPARAM(wp));
-		while ((n = wheel.get()) != 0)
-		{
-			parent.post(WM::COMMAND, static_cast<int>((n < 0)
-				? ID::FILE_BACK : ID::FILE_NEXT), 0);
-		}
-		return 1;
+    case WM::MOUSEWHEEL: {
+        // 回数分だけカレントを移動する
+        int n;
+        wheel.add(-GET_WHEEL_DELTA_WPARAM(wp));
+        while ((n = wheel.get()) != 0)
+        {
+            delegateCommand(n < 0 ? ID::FILE_BACK : ID::FILE_NEXT);
+        }
+        return 1;
 
-	} // case
-	} // switch
+    } // case
+    } // switch
 
-	return 0;
+    return 0;
 } // onEvent
 
 
@@ -133,18 +130,18 @@ loadKeyCommands()
         size_t n;
         basis::CKey key;
         basis::StringBuffer s(0, str);
-        while(!s.empty()) {
-			if (key.read(s.c_str())) {
+        while (!s.empty()) {
+            if (key.read(s.c_str())) {
                 if (!keymap.append(key, static_cast<DWORD>(id)))
                     throw 0;
-			}
+            }
             if ((n = s.find(_T(','))) == s.npos)
                 break; // カンマ区切りでリピート
-			s.refer(s.c_str() + n + 1);
+            s.refer(s.c_str() + n + 1);
         }
     });
 
-	return keymap.size() != 0;
+    return keymap.size() != 0;
 }
 
 
@@ -152,17 +149,17 @@ loadKeyCommands()
 int CImageViewer::Control::
 onMouseDrag(Window *win)
 {
-	if (mouse.vkey() == VK_LBUTTON)
-		return onLButtonDrag(win);
-	if (mouse.vkey() == VK_RBUTTON)
-		return onRButtonDrag();
-	return 1;
+    if (mouse.vkey() == VK_LBUTTON)
+        return onLButtonDrag(win);
+    if (mouse.vkey() == VK_RBUTTON)
+        return onRButtonDrag();
+    return 1;
 }
 
 
 
 int CImageViewer::Control::
-onLButtonClick()
+    onLButtonClick()
 {
     if (parent.setCurrent(parent.list->itemFromPt(mouse.pos())))
         return 1;
@@ -174,19 +171,19 @@ onLButtonClick()
 int CImageViewer::Control::
 onLButtonDrag(Window *win)
 {
-	if (m_bDragList) {
-		parent.list->move({ 0, mouse.dy() });
-	}
-	else if (m_bGripImage || win->isMaximized() || !win->isPopup()) {
-		parent.move_image(mouse.getDifference());
-	}
-	else {
-		win->move({ mouse.dx_abs(), mouse.dy_abs() });
-		return 1;	// 再描画済み
-	}
+    if (m_bDragList) {
+        parent.list->move({ 0, mouse.dy() });
+    }
+    else if (m_bGripImage || win->isMaximized() || !win->isPopup()) {
+        parent.move_image(mouse.getDifference());
+    }
+    else {
+        win->move({ mouse.dx_abs(), mouse.dy_abs() });
+        return 1;    // 再描画済み
+    }
 
-	win->update();
-	return 1;
+    win->update();
+    return 1;
 }
 
 
@@ -194,26 +191,26 @@ onLButtonDrag(Window *win)
 int CImageViewer::Control::
 onMouseMove(Window *win, Message msg, WPARAM wp, LPARAM lp)
 {
-	if (mouse.proc(*win, msg, wp, lp) && (mouse.isDragged()))
-		return onMouseDrag(win);
+    if (mouse.proc(*win, msg, wp, lp) && (mouse.isDragged()))
+        return onMouseDrag(win);
 
-	// 一時的にタイトルバーを表示する
-	int margin = GetSystemMetrics(SM_CYCAPTION);
-	if (mouse.pos().y <= margin && mouse.pos().y >= -margin) {
-		if (win->isPopup()) {
-			parent.m_bTemporaryShowTitle = true;
-			win->popup(false);
-		}
-		return 1;
-	}
+    // 一時的にタイトルバーを表示する
+    int margin = GetSystemMetrics(SM_CYCAPTION);
+    if (mouse.pos().y <= margin && mouse.pos().y >= -margin) {
+        if (win->isPopup()) {
+            parent.m_bTemporaryShowTitle = true;
+            win->popup(false);
+        }
+        return 1;
+    }
 
-	// 解除
-	else if (parent.m_bTemporaryShowTitle) {
-		parent.m_bTemporaryShowTitle = false;
-		if (win->isMaximized() || parent.menu->isSelected(ID::VIEW_POPUP))
-			win->popup();
-	}
-	return 1;
+    // 解除
+    else if (parent.m_bTemporaryShowTitle) {
+        parent.m_bTemporaryShowTitle = false;
+        if (win->isMaximized() || parent.menu->isSelected(ID::VIEW_POPUP))
+            win->popup();
+    }
+    return 1;
 }
 
 
@@ -221,23 +218,18 @@ onMouseMove(Window *win, Message msg, WPARAM wp, LPARAM lp)
 int CImageViewer::Control::
 onRButtonDrag()
 {
-	hFlip.add(mouse.dx());
-	vFlip.add(mouse.dy());
+    // Currently not used.
+    // vFlip.add(mouse.dy());
 
-	// 左右にドラッグで表示ファイル変更
-	while (hFlip.over()) {
-		ID cmd = (hFlip.get() < 0)	? ID::FILE_BACK : ID::FILE_NEXT;
-		parent.post(WM::COMMAND, static_cast<WPARAM>(cmd), 0);
-		vFlip.reset(0);
-		return 1;
-	}
+    // 左右にドラッグで表示ファイル変更
+    hFlip.add(mouse.dx());
+    while (hFlip.over()) {
+        delegateCommand(hFlip.get() < 0 ? ID::FILE_BACK : ID::FILE_NEXT);
+        vFlip.reset(0);
+        return 1;
+    }
 
-	// 縦フリップでなんかやる
-	while (vFlip.over()) {
-		vFlip.get();
-		// hFlip.reset(0);
-	}
-	return 0;
+    return 0;
 }
 
 }  // namespace

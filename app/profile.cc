@@ -6,52 +6,52 @@
 namespace image_viewer {
 
 CImageViewer::Profile::Pair CImageViewer::Profile::m_profile_ids[] {
-	{ ID::PROFILE_ENABLE, TEXT("bEnableSettings") },
-	{ ID::LOADER_RANGE_MAX, TEXT("nPreloadRangeMax") },
+    { ID::PROFILE_ENABLE, TEXT("bEnableSettings") },
+    { ID::LOADER_RANGE_MAX, TEXT("nPreloadRangeMax") },
     { ID::LOADER_RANGE_MIN, TEXT("nPreloadRangeMin") },
-	{ ID::LOADER_MEMORY_CAP, TEXT("nMemoryCapMegaBytes") },
+    { ID::LOADER_MEMORY_CAP, TEXT("nMemoryCapMegaBytes") },
 
-	{ ID::WINDOW_REMINDER, TEXT("bEnableWindowReminder") },
-	{ ID::WINDOW_POSITION, TEXT("bRemindWindowPosition") },
-	{ ID::WINDOW_ZOOMING, TEXT("bRemindWindowZooming") },
-	{ ID::WINDOW_STYLE, TEXT("bRemindWindowStyle") },
-	{ ID::WINDOW_LEFT, TEXT("nWindowLeft") },
-	{ ID::WINDOW_TOP, TEXT("nWindowTop") },
-	{ ID::WINDOW_RIGHT, TEXT("nWindowRight") },
-	{ ID::WINDOW_BOTTOM, TEXT("nWindowBottom") },
-	{ ID::WINDOW_MAXIMIZE, TEXT("bWindowMaximize") },
+    { ID::WINDOW_REMINDER, TEXT("bEnableWindowReminder") },
+    { ID::WINDOW_POSITION, TEXT("bRemindWindowPosition") },
+    { ID::WINDOW_ZOOMING, TEXT("bRemindWindowZooming") },
+    { ID::WINDOW_STYLE, TEXT("bRemindWindowStyle") },
+    { ID::WINDOW_LEFT, TEXT("nWindowLeft") },
+    { ID::WINDOW_TOP, TEXT("nWindowTop") },
+    { ID::WINDOW_RIGHT, TEXT("nWindowRight") },
+    { ID::WINDOW_BOTTOM, TEXT("nWindowBottom") },
+    { ID::WINDOW_MAXIMIZE, TEXT("bWindowMaximize") },
 
-	{ ID::GRIP_IMAGE, TEXT("GripImage") },
-	{ ID::LIST_REMOVE, TEXT("RemoveFromList") },
-	{ ID::CONFIRM_DELETE, TEXT("ConfirmDelete") },
+    { ID::GRIP_IMAGE, TEXT("GripImage") },
+    { ID::LIST_REMOVE, TEXT("RemoveFromList") },
+    { ID::CONFIRM_DELETE, TEXT("ConfirmDelete") },
 
-	{ ID::LAST_PATH, TEXT("sLastOpenedFile") },
-	{ ID::USE_PROFILE, TEXT("Use Settings in INI") },
-	{ ID::SCREEN_TOGGLE, TEXT("ToggleScreen") },
-	{ ID::LIST_EMPTY, TEXT("ListEmpty") },
-	{ ID::FILE_DELETE, TEXT("FileDelete") },
-	{ ID::FILE_QUICK_DELETE, TEXT("QuickFileDelete") },
-	{ ID::FILE_BACK, TEXT("FileBack") },
-	{ ID::FILE_NEXT, TEXT("FileNext") },
-	{ ID::FILE_FIRST, TEXT("FileFirst") },
-	{ ID::FILE_LAST, TEXT("FileLast") },
-	{ ID::FILE_RELOAD, TEXT("FileReload") },
-	{ ID::VIEW_POPUP, TEXT("bHideTitleBar")},
-	{ ID::VIEW_FILENAME, TEXT("ShowFilename") },
-	{ ID::VIEW_FILELIST, TEXT("ShowList") },
-	{ ID::VIEW_CENTER, TEXT("Centering") },
-	{ ID::VIEW_UPSCALE, TEXT("UpscaleImage") },
-	{ ID::VIEW_DOWNSCALE, TEXT("DownscaleImage") },
-	{ ID::VIEW_END, TEXT("View") },
-	{ ID::SORT_GREATER_WRITE, TEXT("DescendingWriteTime") },
-	{ ID::SORT_LESSER_WRITE, TEXT("AscendingWriteTime") },
-	{ ID::SORT_GREATER_CREATION, TEXT("DescendingCreationTime") },
-	{ ID::SORT_LESSER_CREATION, TEXT("AscendingCreationTime") },
-	{ ID::SORT_GREATER_ACCESS, TEXT("DescendingAccessTime") },
-	{ ID::SORT_LESSER_ACCESS, TEXT("AscendingAccessTime") },
-	{ ID::SORT_END, TEXT("SortBy") },
-	{ ID::SHOW_PROPERTY, TEXT("ShowProperty") },
-	{ ID::WINDOW_CLOSE, TEXT("CloseWindow") },
+    { ID::LAST_PATH, TEXT("sLastOpenedFile") },
+    { ID::USE_PROFILE, TEXT("Use Settings in INI") },
+    { ID::SCREEN_TOGGLE, TEXT("ToggleScreen") },
+    { ID::LIST_EMPTY, TEXT("ListEmpty") },
+    { ID::FILE_DELETE, TEXT("FileDelete") },
+    { ID::FILE_QUICK_DELETE, TEXT("QuickFileDelete") },
+    { ID::FILE_BACK, TEXT("FileBack") },
+    { ID::FILE_NEXT, TEXT("FileNext") },
+    { ID::FILE_FIRST, TEXT("FileFirst") },
+    { ID::FILE_LAST, TEXT("FileLast") },
+    { ID::FILE_RELOAD, TEXT("FileReload") },
+    { ID::VIEW_POPUP, TEXT("bHideTitleBar")},
+    { ID::VIEW_FILENAME, TEXT("ShowFilename") },
+    { ID::VIEW_FILELIST, TEXT("ShowList") },
+    { ID::VIEW_CENTER, TEXT("Centering") },
+    { ID::VIEW_UPSCALE, TEXT("UpscaleImage") },
+    { ID::VIEW_DOWNSCALE, TEXT("DownscaleImage") },
+    { ID::VIEW_END, TEXT("View") },
+    { ID::SORT_GREATER_WRITE, TEXT("DescendingWriteTime") },
+    { ID::SORT_LESSER_WRITE, TEXT("AscendingWriteTime") },
+    { ID::SORT_GREATER_CREATION, TEXT("DescendingCreationTime") },
+    { ID::SORT_LESSER_CREATION, TEXT("AscendingCreationTime") },
+    { ID::SORT_GREATER_ACCESS, TEXT("DescendingAccessTime") },
+    { ID::SORT_LESSER_ACCESS, TEXT("AscendingAccessTime") },
+    { ID::SORT_END, TEXT("SortBy") },
+    { ID::SHOW_PROPERTY, TEXT("ShowProperty") },
+    { ID::WINDOW_CLOSE, TEXT("CloseWindow") },
 };
 
 
@@ -59,8 +59,8 @@ CImageViewer::Profile::Pair CImageViewer::Profile::m_profile_ids[] {
 CImageViewer::Profile::
 Profile() : m_enable(true)
 {
-	const auto path = FilePath::GetBootDirectory();
-	m_prof.path((path + kSettingFile).path().c_str());
+    const auto path = FilePath::GetBootDirectory();
+    m_prof.path((path + kSettingFile).path().c_str());
     m_enable = general().loadBoolean(ID::PROFILE_ENABLE, false);
 
     m_lang.path((path + kLanguageFile).path().c_str());
@@ -73,7 +73,7 @@ Profile() : m_enable(true)
 bool CImageViewer::Profile::
 exist()
 {
-	return GetFileAttributes(m_prof.path().c_str()) != static_cast<DWORD>(-1);
+    return GetFileAttributes(m_prof.path().c_str()) != static_cast<DWORD>(-1);
 }
 
 
@@ -81,11 +81,11 @@ exist()
 bool CImageViewer::Profile::
 setEnable(bool bEnable)
 {
-	general();
-	if (save(ID::PROFILE_ENABLE, ToStr(bEnable)) == false)
-		throw std::runtime_error(LOCATION);
-	m_enable = bEnable;
-	return true;
+    general();
+    if (save(ID::PROFILE_ENABLE, ToStr(bEnable)) == false)
+        throw std::runtime_error(LOCATION);
+    m_enable = bEnable;
+    return true;
 }
 
 
@@ -93,7 +93,7 @@ setEnable(bool bEnable)
 const TCHAR * CImageViewer::Profile::
 ToStr(bool b)
 {
-	return b ? TEXT("true") : TEXT("false");
+    return b ? TEXT("true") : TEXT("false");
 }
 
 
@@ -119,11 +119,11 @@ applyToAllItemInTheSection(std::function<void(ID, const TCHAR *)> f)
 const TCHAR * CImageViewer::Profile::
 getKeyString(ID id)
 {
-	for (auto i : m_profile_ids) {
-		if (i.id == id)
-			return i.key;
-	}
-	return TEXT("");
+    for (auto i : m_profile_ids) {
+        if (i.id == id)
+            return i.key;
+    }
+    return TEXT("");
 }
 
 
@@ -161,7 +161,7 @@ saveBoolean(ID id, bool b)
 int CImageViewer::Profile::
 load(ID id, int nDefault)
 {
-	return ::basis::ToInt(load(id, nullptr), nDefault);
+    return ::basis::ToInt(load(id, nullptr), nDefault);
 }
 
 
@@ -169,7 +169,7 @@ load(ID id, int nDefault)
 bool CImageViewer::Profile::
 save(ID id, int value)
 {
-	return m_prof.write(getKeyString(id), ::basis::ToStr(value).c_str());
+    return m_prof.write(getKeyString(id), ::basis::ToStr(value).c_str());
 }
 
 
@@ -177,7 +177,7 @@ save(ID id, int value)
 const TCHAR *CImageViewer::Profile::
 load(ID id, const TCHAR *sDefault)
 {
-	return m_prof.read(getKeyString(id), sDefault);
+    return m_prof.read(getKeyString(id), sDefault);
 }
 
 
@@ -185,7 +185,7 @@ load(ID id, const TCHAR *sDefault)
 bool CImageViewer::Profile::
 save(ID id, const TCHAR * value)
 {
-	return m_prof.write(getKeyString(id), value);
+    return m_prof.write(getKeyString(id), value);
 }
 
 

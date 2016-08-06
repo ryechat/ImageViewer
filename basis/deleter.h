@@ -9,18 +9,18 @@
 
 
 /*! @file
-	ハンドルのデリータの短縮エイリアスを定義する。
+    ハンドルのデリータの短縮エイリアスを定義する。
 */
 
 
 //! SignalHandle のデリータ
 struct DSignalHandle {
-	void operator()(HANDLE h) const {
-		if (h != INVALID_HANDLE_VALUE) {
-			WaitForSingleObject(h, INFINITE);
-			CloseHandle(h);
-		}
-	}
+    void operator()(HANDLE h) const {
+        if (h != INVALID_HANDLE_VALUE) {
+            WaitForSingleObject(h, INFINITE);
+            CloseHandle(h);
+        }
+    }
 };
 
 //! 解体時に待機、終了処理を行うハンドル。主にイベントオブジェクト。
@@ -31,10 +31,10 @@ SignalHandle;
 
 //! ClosableHandle のデリータ
 struct DCloseHandle {
-	void operator()(HANDLE h) const {
-		if (h != INVALID_HANDLE_VALUE)
-			CloseHandle(h);
-	}
+    void operator()(HANDLE h) const {
+        if (h != INVALID_HANDLE_VALUE)
+            CloseHandle(h);
+    }
 };
 
 //! 解体時に終了処理を行うハンドル。イベント等。

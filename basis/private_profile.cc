@@ -1,8 +1,8 @@
 /* APIs
 Get/WritePrivateProfileString
-	Windows NT 3.1 / 95 以降
-	(Winbase.h), Kernel32.lib
-	Unicode：Windows NT/2000 は Unicode 版と ANSI 版を実装
+    Windows NT 3.1 / 95 以降
+    (Winbase.h), Kernel32.lib
+    Unicode：Windows NT/2000 は Unicode 版と ANSI 版を実装
 */
 
 
@@ -12,7 +12,7 @@ namespace basis {
 
 CPrivateProfile::
 CPrivateProfile(tstr path)
-	: m_path(std::move(path))
+    : m_path(std::move(path))
 {}
 
 
@@ -20,7 +20,7 @@ CPrivateProfile(tstr path)
 CPrivateProfile& CPrivateProfile::
 path(tstr path)
 {
-	m_path = std::move(path);
+    m_path = std::move(path);
     return *this;
 }
 
@@ -29,7 +29,7 @@ path(tstr path)
 CPrivateProfile& CPrivateProfile::
 section(tstr sectionname)
 {
-	m_section = std::move(sectionname);
+    m_section = std::move(sectionname);
     return *this;
 }
 
@@ -38,10 +38,10 @@ section(tstr sectionname)
 bool CPrivateProfile::
 getAllKeyNames() noexcept
 {
-	if (m_path.empty() || m_section.empty())
-		return false;
+    if (m_path.empty() || m_section.empty())
+        return false;
 
-	return do_read(m_section.c_str(), nullptr, nullptr);
+    return do_read(m_section.c_str(), nullptr, nullptr);
 }
 
 
@@ -49,9 +49,9 @@ getAllKeyNames() noexcept
 bool CPrivateProfile::
 getAllSectionNames() noexcept
 {
-	if (m_path.empty())
-		return false;
-	return do_read(nullptr, nullptr, nullptr);
+    if (m_path.empty())
+        return false;
+    return do_read(nullptr, nullptr, nullptr);
 }
 
 
@@ -59,15 +59,15 @@ getAllSectionNames() noexcept
 const TCHAR *CPrivateProfile::
 read(const TCHAR *name, const TCHAR *sDefault)
 {
-	if (isInvalid(name)) {
-		m_buf = sDefault;
-		return m_buf.c_str();
-	}
-		
-	if (do_read(m_section.c_str(), name, sDefault) == false) {
-		m_buf = StringBuffer(sDefault);
-	}
-	return m_buf.c_str();
+    if (isInvalid(name)) {
+        m_buf = sDefault;
+        return m_buf.c_str();
+    }
+        
+    if (do_read(m_section.c_str(), name, sDefault) == false) {
+        m_buf = StringBuffer(sDefault);
+    }
+    return m_buf.c_str();
 }
 
 
@@ -75,22 +75,22 @@ read(const TCHAR *name, const TCHAR *sDefault)
 bool CPrivateProfile::
 do_read(const TCHAR *section, const TCHAR *name, const TCHAR *def)
 {
-	for(DWORD capacity, nRead; ;m_buf.resize()) {
-		capacity = static_cast<DWORD>(m_buf.capacity());
-		nRead = GetPrivateProfileString(section, name, def,
-			m_buf.data(), capacity, m_path.c_str());
-		if (nRead < capacity - 2) {
-			if (nRead != 0)
-				return true;
+    for(DWORD capacity, nRead; ;m_buf.resize()) {
+        capacity = static_cast<DWORD>(m_buf.capacity());
+        nRead = GetPrivateProfileString(section, name, def,
+            m_buf.data(), capacity, m_path.c_str());
+        if (nRead < capacity - 2) {
+            if (nRead != 0)
+                return true;
 
-			// getAll~ functionでひとつも見つからなかった場合、
-			// 終端文字は最後のひとつしか付加されないので、補う。
-			if (capacity >= 2) {
-				m_buf.data()[1] = TEXT('\0');
-				return true;
-			}
-		}
-	}
+            // getAll~ functionでひとつも見つからなかった場合、
+            // 終端文字は最後のひとつしか付加されないので、補う。
+            if (capacity >= 2) {
+                m_buf.data()[1] = TEXT('\0');
+                return true;
+            }
+        }
+    }
 }
 
 
@@ -98,7 +98,7 @@ do_read(const TCHAR *section, const TCHAR *name, const TCHAR *def)
 bool CPrivateProfile::
 write(const TCHAR *name, const TCHAR *value)
 {
-	return (!isInvalid(name) && do_write(name, value));
+    return (!isInvalid(name) && do_write(name, value));
 }
 
 
@@ -106,7 +106,7 @@ write(const TCHAR *name, const TCHAR *value)
 bool CPrivateProfile::
 eraseKey(const TCHAR *name)
 {
-	return (!isInvalid(name) && do_write(name, nullptr));
+    return (!isInvalid(name) && do_write(name, nullptr));
 }
 
 
@@ -114,9 +114,9 @@ eraseKey(const TCHAR *name)
 bool CPrivateProfile::
 clearSection()
 {
-	if (m_path.empty() || m_section.empty())
-		return false;
-	return do_write(nullptr, nullptr);
+    if (m_path.empty() || m_section.empty())
+        return false;
+    return do_write(nullptr, nullptr);
 }
 
 
@@ -124,8 +124,8 @@ clearSection()
 bool CPrivateProfile::
 do_write(const TCHAR *name, const TCHAR *value)
 {
-	return (FALSE != WritePrivateProfileString(m_section.c_str(),
-		name, value, m_path.c_str()));
+    return (FALSE != WritePrivateProfileString(m_section.c_str(),
+        name, value, m_path.c_str()));
 }
 
 
@@ -134,8 +134,8 @@ do_write(const TCHAR *name, const TCHAR *value)
 bool CPrivateProfile::
 isInvalid(const TCHAR *name)
 {
-	return (m_path.empty() || m_section.empty()
-		|| name == nullptr || *name == TEXT('\0'));
+    return (m_path.empty() || m_section.empty()
+        || name == nullptr || *name == TEXT('\0'));
 }
 
 }  // namespace

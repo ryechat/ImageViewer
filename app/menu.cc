@@ -20,12 +20,12 @@ public:
     ~Impl() = default;
 
     void create();
-	void access(bool bSave);
-	std::basic_string<TCHAR> getAcceleratorString(ID id);
+    void access(bool bSave);
+    std::basic_string<TCHAR> getAcceleratorString(ID id);
 
-	ContextMenu &parent;
-	basis::CPopupMenu m_menu;
-	std::vector<std::pair<int, int>> m_radio;
+    ContextMenu &parent;
+    basis::CPopupMenu m_menu;
+    std::vector<std::pair<int, int>> m_radio;
 };
 
 
@@ -161,10 +161,10 @@ CImageViewer::ContextMenu::~ContextMenu() = default;
 void CImageViewer::ContextMenu::
 initialize()
 {
-	impl->create();
-	if (parent.profile->isEnable())
-		impl->access(false);
-	updateStatus();
+    impl->create();
+    if (parent.profile->isEnable())
+        impl->access(false);
+    updateStatus();
 }
 
 
@@ -180,18 +180,18 @@ saveSettings()
 bool CImageViewer::ContextMenu::
 changeStatus(ID id)
 {
-	// 2State Button
-	switch(id) {
-	case ID::USE_PROFILE:
-	case ID::VIEW_FILELIST:
-	case ID::VIEW_FILENAME:
-	case ID::VIEW_UPSCALE:
-	case ID::VIEW_DOWNSCALE:
-	case ID::VIEW_CENTER:
-	case ID::VIEW_POPUP:
-		impl->m_menu.invert(static_cast<int>(id));
-		return true;
-	}
+    // 2State Button
+    switch(id) {
+    case ID::USE_PROFILE:
+    case ID::VIEW_FILELIST:
+    case ID::VIEW_FILENAME:
+    case ID::VIEW_UPSCALE:
+    case ID::VIEW_DOWNSCALE:
+    case ID::VIEW_CENTER:
+    case ID::VIEW_POPUP:
+        impl->m_menu.invert(static_cast<int>(id));
+        return true;
+    }
 
     // Radio button
     for (auto &i : impl->m_radio) {
@@ -202,7 +202,7 @@ changeStatus(ID id)
         }
     }
 
-	return false;
+    return false;
 }
 
 
@@ -210,11 +210,11 @@ changeStatus(ID id)
 ID CImageViewer::ContextMenu::
 getSortWay()
 {
-	for (ID id = next(ID::SORT_BEGIN); id != ID::SORT_END; id = next(id)) {
-		if (isSelected(id))
-			return id;
-	}
-	return next(ID::SORT_BEGIN);
+    for (ID id = next(ID::SORT_BEGIN); id != ID::SORT_END; id = next(id)) {
+        if (isSelected(id))
+            return id;
+    }
+    return next(ID::SORT_BEGIN);
 }
 
 
@@ -261,44 +261,44 @@ clear(ID id)
 
 bool CImageViewer::ContextMenu::updateStatus()
 {
-	const auto &f = parent.filer;
-	const auto iCurrent = f->current();
-	const bool bInvalidFile = f->isEmpty() || iCurrent == f->cend();
+    const auto &f = parent.filer;
+    const auto iCurrent = f->current();
+    const bool bInvalidFile = f->isEmpty() || iCurrent == f->cend();
 
-	ID ids[] = {
-		ID::SHOW_PROPERTY,
-		ID::FILE_RELOAD,
-		ID::FILE_DELETE
-	};
-	for (auto i : ids) {
-		if (bInvalidFile)
-			disable(i);
-		else
-			enable(i);
-	}
+    ID ids[] = {
+        ID::SHOW_PROPERTY,
+        ID::FILE_RELOAD,
+        ID::FILE_DELETE
+    };
+    for (auto i : ids) {
+        if (bInvalidFile)
+            disable(i);
+        else
+            enable(i);
+    }
 
-	// Disable if it is showing a first item.
-	if (bInvalidFile || iCurrent == f->cbegin())
-	{
-		disable(ID::FILE_BACK);
-		disable(ID::FILE_FIRST);
-	}
-	else {
-		enable(ID::FILE_BACK);
-		enable(ID::FILE_FIRST);
-	}
+    // Disable if it is showing a first item.
+    if (bInvalidFile || iCurrent == f->cbegin())
+    {
+        disable(ID::FILE_BACK);
+        disable(ID::FILE_FIRST);
+    }
+    else {
+        enable(ID::FILE_BACK);
+        enable(ID::FILE_FIRST);
+    }
 
-	// Disable if it is showing a last item.
-	if (bInvalidFile || iCurrent == f->clast())
-	{
-		disable(ID::FILE_NEXT);
-		disable(ID::FILE_LAST);
-	}
-	else {
-		enable(ID::FILE_NEXT);
-		enable(ID::FILE_LAST);
-	}
-	return true;
+    // Disable if it is showing a last item.
+    if (bInvalidFile || iCurrent == f->clast())
+    {
+        disable(ID::FILE_NEXT);
+        disable(ID::FILE_LAST);
+    }
+    else {
+        enable(ID::FILE_NEXT);
+        enable(ID::FILE_LAST);
+    }
+    return true;
 }
 
 
@@ -306,8 +306,8 @@ bool CImageViewer::ContextMenu::updateStatus()
 int CImageViewer::ContextMenu::
 track(basis::Point pt) const
 {
-	impl->m_menu.redraw(parent);
-	return impl->m_menu.track(parent, pt);
+    impl->m_menu.redraw(parent);
+    return impl->m_menu.track(parent, pt);
 }
 
 }  // namespace

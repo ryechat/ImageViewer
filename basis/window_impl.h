@@ -39,16 +39,16 @@ public:
 private:
     bool exist(const IEventHandler *p);
 
-	//! ウィンドウハンドルに関連付けられたイベントハンドラを取得し委譲する。
-	static LRESULT CALLBACK Dispatch(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
+    //! ウィンドウハンドルに関連付けられたイベントハンドラを取得し委譲する。
+    static LRESULT CALLBACK Dispatch(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
 
-	//! HWNDに仕込んだポインタを取得する
-	static Window * GetInstance(HWND hWnd);
+    //! HWNDに仕込んだポインタを取得する
+    static Window * GetInstance(HWND hWnd);
 
     ATOM createWindowAtom(const TCHAR *identifier, WNDPROC proc);
 
-	//! CreateWindow中のインスタンス
-	static Window *ConstructingInstance;
+    //! CreateWindow中のインスタンス
+    static Window *ConstructingInstance;
     static CriticalSection m_cs;
 
     Window* parent;

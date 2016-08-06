@@ -12,11 +12,11 @@
 
 namespace basis {
 
-	//!	シングルトンオブジェクトのインスタンス参照を取得する
-	/*	C++11で、ブロックスコープを持つstatic変数の初期化は、
-		スレッドセーフであることが規定された。
-		http://cpprefjp.github.io/lang/cpp11/static_initialization_thread_safely.html
-	*//*
+    //!    シングルトンオブジェクトのインスタンス参照を取得する
+    /*    C++11で、ブロックスコープを持つstatic変数の初期化は、
+        スレッドセーフであることが規定された。
+        http://cpprefjp.github.io/lang/cpp11/static_initialization_thread_safely.html
+    *//*
 
 //! シングルトンオブジェクトを解放する関数のリスト
 /*! 下記を参考にvectorに置き換えたもの
@@ -25,25 +25,25 @@ http://qiita.com/kikuuuty/items/fcf5f7df2f0493c437dc#%E5%8B%95%E7%9A%84%E5%89%B2
 class SingletonFinalizers final
 {
 public:
-	using Finalizer = void(*)();
+    using Finalizer = void(*)();
 
-	SingletonFinalizers() = delete;
+    SingletonFinalizers() = delete;
 
-	//! Push deleter to finalizer list.
-	static void Push(Finalizer func)
-	{
-		maFinalizer.push_back(std::move(func));
-	}
+    //! Push deleter to finalizer list.
+    static void Push(Finalizer func)
+    {
+        maFinalizer.push_back(std::move(func));
+    }
 
-	/*! Execute finalizers of singleton objects.
-		Finalizers will be executed in FILO order.
-		Getting refference to instance after finalized
-		is not thread safe.
-	*/
-	static void Finalize();
+    /*! Execute finalizers of singleton objects.
+        Finalizers will be executed in FILO order.
+        Getting refference to instance after finalized
+        is not thread safe.
+    */
+    static void Finalize();
 
 private:
-	static std::vector<Finalizer> maFinalizer;
+    static std::vector<Finalizer> maFinalizer;
 };
 
 
@@ -51,24 +51,24 @@ private:
 template<typename T>
 class singleton {
 public:
-	singleton() {
-		get();
-	}
-	T* operator->() { return &get(); }
-	static T& get() {
-		std::call_once(flag_init, create);
-		return *m_p;
-	}
-	static void create() {
-		SingletonFinalizers::Push(&destroy);
-		m_p = new T;
-	}
-	static void destroy() {
-		delete m_p;
-		m_p = nullptr;
-	}
-	static std::once_flag flag_init;
-	static T* m_p;
+    singleton() {
+        get();
+    }
+    T* operator->() { return &get(); }
+    static T& get() {
+        std::call_once(flag_init, create);
+        return *m_p;
+    }
+    static void create() {
+        SingletonFinalizers::Push(&destroy);
+        m_p = new T;
+    }
+    static void destroy() {
+        delete m_p;
+        m_p = nullptr;
+    }
+    static std::once_flag flag_init;
+    static T* m_p;
 };
 
 template<typename T>

@@ -12,35 +12,38 @@ namespace image_viewer {
 
 class CImageViewer::Control final : public basis::IEventHandler {
 public:
-	Control(CImageViewer &parent_);
-	~Control() = default;
+    Control(CImageViewer &parent_);
+    ~Control() = default;
 
-	virtual int onEvent(Window*, Message, WPARAM, LPARAM) final;
+    virtual int onEvent(Window*, Message, WPARAM, LPARAM) final;
 
-	ID getCommand(WPARAM wp) {
-		return static_cast<ID>(keymap.getCommand(static_cast<DWORD>(wp), true));
-	}
+    ID getCommand(WPARAM wp) {
+        return static_cast<ID>(keymap.getCommand(static_cast<DWORD>(wp), true));
+    }
 
     basis::CKey getKey(ID id, int n) {
-		return keymap.getKey(static_cast<int>(id), n);
-	}
+        return keymap.getKey(static_cast<int>(id), n);
+    }
 
 private:
-	bool loadKeyCommands();
-	int onMouseMove(Window*, Message, WPARAM, LPARAM);
-	int onMouseDrag(Window*);
+    bool loadKeyCommands();
+    int onMouseMove(Window*, Message, WPARAM, LPARAM);
+    int onMouseDrag(Window*);
     int onLButtonClick();
-	int onRButtonDrag();
-	int onLButtonDrag(Window*);
+    int onRButtonDrag();
+    int onLButtonDrag(Window*);
+    int delegateCommand(ID command_id) {
+        return parent.broadcast(WM::COMMAND, static_cast<WPARAM>(command_id), 0);
+    }
 
-	CImageViewer &parent;
-	bool m_bGripImage;
-	basis::CKeyMap keymap;
-	basis::CMouseDrag mouse;
-	CUnitDispenser<short> wheel;	// マウスホイールの回転検出
-	CUnitDispenser<int> hFlip;		// 左右ドラッグ
-	CUnitDispenser<int> vFlip;		// 上下ドラッグ
-	bool m_bDragList;				// Dragging item-list? or image.
+    CImageViewer &parent;
+    bool m_bGripImage;
+    basis::CKeyMap keymap;
+    basis::CMouseDrag mouse;
+    CUnitDispenser<short> wheel;    // マウスホイールの回転検出
+    CUnitDispenser<int> hFlip;        // 左右ドラッグ
+    CUnitDispenser<int> vFlip;        // 上下ドラッグ
+    bool m_bDragList;                // Dragging item-list? or image.
 };
 
 }  // namespace

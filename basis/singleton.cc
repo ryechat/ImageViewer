@@ -9,10 +9,10 @@ SingletonFinalizers::maFinalizer;
 
 void SingletonFinalizers::Finalize()
 {
-	while (!maFinalizer.empty()) {
-		maFinalizer.back()();
-		maFinalizer.pop_back();
-	}
+    while (!maFinalizer.empty()) {
+        maFinalizer.back()();
+        maFinalizer.pop_back();
+    }
 }
 
 }  // namespace

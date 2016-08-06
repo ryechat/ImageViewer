@@ -10,35 +10,35 @@ namespace basis {
 
 class CPosition {
 public:
-	CPosition() { clear(); }
-	explicit CPosition(POINT p) { clear(); pt = p; }
-	CPosition(LONG x, LONG y) { clear(); set(x,y); }
-	~CPosition() = default;
+    CPosition() { clear(); }
+    explicit CPosition(POINT p) { clear(); pt = p; }
+    CPosition(LONG x, LONG y) { clear(); set(x,y); }
+    ~CPosition() = default;
 
-	explicit CPosition(const CPosition &rhs) = default;
-	CPosition& operator= (const CPosition &rhs) = default;
+    explicit CPosition(const CPosition &rhs) = default;
+    CPosition& operator= (const CPosition &rhs) = default;
 
-	operator POINT() { return pt; }
+    operator POINT() { return pt; }
 
-	LONG x() { return pt.x; }
-	LONG y() { return pt.y; }
+    LONG x() { return pt.x; }
+    LONG y() { return pt.y; }
 
-	const POINT& base() { return bs; }
-	const POINT& pos() { return pt; }
+    const POINT& base() { return bs; }
+    const POINT& pos() { return pt; }
 
-	void setBase(LONG x, LONG y) { pt.x = x, pt.y = y; }
-	void set(POINT p) { pt = p; }
-	void set(LONG cx, LONG cy) { pt.x = cx; pt.y = cy; }
+    void setBase(LONG x, LONG y) { pt.x = x, pt.y = y; }
+    void set(POINT p) { pt = p; }
+    void set(LONG cx, LONG cy) { pt.x = cx; pt.y = cy; }
 
-	void reset() { pt = bs; }
-	void clear() { pt.x = pt.y = bs.x = bs.y = 0; }
+    void reset() { pt = bs; }
+    void clear() { pt.x = pt.y = bs.x = bs.y = 0; }
 
-	void move(POINT d) { pt.x += d.x; pt.y += d.y; }
-	void move(LONG dx, LONG dy) { pt.x += dx; pt.y += dy; }
+    void move(POINT d) { pt.x += d.x; pt.y += d.y; }
+    void move(LONG dx, LONG dy) { pt.x += dx; pt.y += dy; }
 
 private:
-	POINT pt;	// 現在位置
-	POINT bs;	// 初期位置
+    POINT pt;    // 現在位置
+    POINT bs;    // 初期位置
 };
 
 }

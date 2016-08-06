@@ -16,29 +16,29 @@ enum class ID : int;
 class CImageViewer::ContextMenu {
 public:
     ContextMenu(CImageViewer &parent_);
-	~ContextMenu();
+    ~ContextMenu();
 
     /*! メニュー状態を復元し、アプリケーション設定に反映する.
         ウィンドウを生成してから呼び出すこと。
     */
-	void initialize();
+    void initialize();
 
     //! メニュー項目の状態を設定ファイルに保存する
     void saveSettings();
  
-	//! アプリケーションの状態に合わせてメニュー項目の有効/無効を切り替える
-	bool updateStatus();
+    //! アプリケーションの状態に合わせてメニュー項目の有効/無効を切り替える
+    bool updateStatus();
 
-	/*! 項目のチェック状態を反転する.
+    /*! 項目のチェック状態を反転する.
         ラジオボタンの場合はONになり、グループ内の他のラジオボタンがOFFになる
-	*/
-	bool changeStatus(ID id);
+    */
+    bool changeStatus(ID id);
 
-	//! メニューを表示し、ユーザの選択を返す。キャンセルは0。
-	int track(basis::Point pt) const;
+    //! メニューを表示し、ユーザの選択を返す。キャンセルは0。
+    int track(basis::Point pt) const;
 
     //! 選択されているソート条件を返す
-	ID getSortWay();
+    ID getSortWay();
 
     //! 項目を有効化する
     void enable(ID id);

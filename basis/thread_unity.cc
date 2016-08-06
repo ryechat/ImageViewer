@@ -11,20 +11,20 @@ namespace basis {
 
 class CThreadUnity::Impl {
 public:
-	Impl() { setThreadCount(1); }
-	~Impl() {}
-	using TaskTy = CThread::TaskTy;
-	void setThreadCount(int nThreads);
-	void addTask(CThread *pThread, TaskTy task);
-	void reloadTask(CThread *pThread);
-	void run(CThread *pThread, TaskTy task);
-	bool wait(bool bWaitAll, DWORD waitMilliSeconds);
-	CThread *getSuspendedThread();
+    Impl() { setThreadCount(1); }
+    ~Impl() {}
+    using TaskTy = CThread::TaskTy;
+    void setThreadCount(int nThreads);
+    void addTask(CThread *pThread, TaskTy task);
+    void reloadTask(CThread *pThread);
+    void run(CThread *pThread, TaskTy task);
+    bool wait(bool bWaitAll, DWORD waitMilliSeconds);
+    CThread *getSuspendedThread();
 
-	CriticalSection m_cs;
-	std::list<TaskTy> m_tasks;
-	std::vector<HANDLE> m_signals;
-	std::vector<std::unique_ptr<CThread>> m_threads;
+    CriticalSection m_cs;
+    std::list<TaskTy> m_tasks;
+    std::vector<HANDLE> m_signals;
+    std::vector<std::unique_ptr<CThread>> m_threads;
 };
 
 
@@ -33,16 +33,16 @@ void CThreadUnity::Impl::
 setThreadCount(int nThreads)
 {
     assert(nThreads >= 0);
-	CriticalSection cs = m_cs.local();
-	while (m_threads.size() > static_cast<size_t>(nThreads)) {
-		m_threads.back()->wait(INFINITE);
-		m_threads.pop_back();
-		m_signals.pop_back();
-	}
-	while (m_threads.size() < static_cast<size_t>(nThreads)) {
-		m_threads.emplace_back(new CThread);
-		m_signals.push_back(m_threads.back()->getWaitHandle());
-	}
+    CriticalSection cs = m_cs.local();
+    while (m_threads.size() > static_cast<size_t>(nThreads)) {
+        m_threads.back()->wait(INFINITE);
+        m_threads.pop_back();
+        m_signals.pop_back();
+    }
+    while (m_threads.size() < static_cast<size_t>(nThreads)) {
+        m_threads.emplace_back(new CThread);
+        m_signals.push_back(m_threads.back()->getWaitHandle());
+    }
 }
 
 
@@ -50,14 +50,14 @@ setThreadCount(int nThreads)
 void CThreadUnity::Impl::
 addTask(CThread *thread, TaskTy func)
 {
-	auto cs = m_cs.local();
-	if (!thread)
-		thread = getSuspendedThread();
+    auto cs = m_cs.local();
+    if (!thread)
+        thread = getSuspendedThread();
 
-	if (thread)
-		run(thread, std::move(func));
-	else
-		m_tasks.push_back(std::move(func));
+    if (thread)
+        run(thread, std::move(func));
+    else
+        m_tasks.push_back(std::move(func));
 }
 
 
@@ -65,11 +65,11 @@ addTask(CThread *thread, TaskTy func)
 bool CThreadUnity::Impl::
 wait(bool bWaitAll, DWORD dwMilliseconds)
 {
-	DWORD size = static_cast<DWORD>(m_signals.size());
-	DWORD result = WaitForMultipleObjects(size,
-		&m_signals[0], bWaitAll, dwMilliseconds);
+    DWORD size = static_cast<DWORD>(m_signals.size());
+    DWORD result = WaitForMultipleObjects(size,
+        &m_signals[0], bWaitAll, dwMilliseconds);
 
-	return (result != WAIT_TIMEOUT);
+    return (result != WAIT_TIMEOUT);
 }
 
 
@@ -77,12 +77,12 @@ wait(bool bWaitAll, DWORD dwMilliseconds)
 void CThreadUnity::Impl::
 run(CThread *pThread, TaskTy task)
 {
-	TaskTy fReload{ [this, pThread] {
-		reloadTask(pThread);
-	} };
+    TaskTy fReload{ [this, pThread] {
+        reloadTask(pThread);
+    } };
 
-	pThread->addTask(task);
-	pThread->addTask(fReload);
+    pThread->addTask(task);
+    pThread->addTask(fReload);
 }
 
 
@@ -90,12 +90,12 @@ run(CThread *pThread, TaskTy task)
 CThread* CThreadUnity::Impl::
 getSuspendedThread()
 {
-	CriticalSection cs = m_cs.local();
-	for (auto &p : m_threads) {
-		if (!p->isBusy())
-			return p.get();
-	}
-	return nullptr;
+    CriticalSection cs = m_cs.local();
+    for (auto &p : m_threads) {
+        if (!p->isBusy())
+            return p.get();
+    }
+    return nullptr;
 }
 
 
@@ -103,12 +103,12 @@ getSuspendedThread()
 void CThreadUnity::Impl::
 reloadTask(CThread *pThread)
 {
-	CriticalSection cs = m_cs.local();
-	if (m_tasks.empty())
-		return;
+    CriticalSection cs = m_cs.local();
+    if (m_tasks.empty())
+        return;
 
-	run(pThread, m_tasks.front());
-	m_tasks.pop_front();
+    run(pThread, m_tasks.front());
+    m_tasks.pop_front();
 }
 
 
@@ -118,14 +118,14 @@ reloadTask(CThread *pThread)
 
 CThreadUnity::CThreadUnity() : impl(new Impl)
 {
-	impl->setThreadCount(1);
+    impl->setThreadCount(1);
 }
 
 
 
 CThreadUnity::~CThreadUnity()
 {
-	delete impl;
+    delete impl;
 }
 
 
@@ -133,7 +133,7 @@ CThreadUnity::~CThreadUnity()
 int CThreadUnity::
 threadCount()
 {
-	return static_cast<int>(impl->m_threads.size());
+    return static_cast<int>(impl->m_threads.size());
 }
 
 
@@ -141,11 +141,11 @@ threadCount()
 bool CThreadUnity::
 setThreadCount(int nThreads)
 {
-	if (nThreads > 0 && nThreads <= MAX_THREADS) {
-		impl->setThreadCount(nThreads);
-		return true;
-	}
-	return false;
+    if (nThreads > 0 && nThreads <= MAX_THREADS) {
+        impl->setThreadCount(nThreads);
+        return true;
+    }
+    return false;
 }
 
 
@@ -153,8 +153,8 @@ setThreadCount(int nThreads)
 bool CThreadUnity::
 wait(bool b, int time)
 {
-	DWORD t = (time < 0) ? INFINITE : time;
-	return impl->wait(b, t);
+    DWORD t = (time < 0) ? INFINITE : time;
+    return impl->wait(b, t);
 }
 
 
@@ -162,7 +162,7 @@ wait(bool b, int time)
 void CThreadUnity::
 addTask(CThread::TaskTy task)
 {
-	impl->addTask(nullptr, std::move(task));
+    impl->addTask(nullptr, std::move(task));
 }
 
 }  // namespace

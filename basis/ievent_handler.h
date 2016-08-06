@@ -11,13 +11,13 @@ namespace basis {
 class Window;
 enum class Message : int;
 
-/*!	ウィンドウメッセージのリスナインタフェース.
-	ウィンドウクラスの各インスタンス、イベントリスナはこれを継承・実装する。
+/*!    ウィンドウメッセージのリスナインタフェース.
+    ウィンドウクラスの各インスタンス、イベントリスナはこれを継承・実装する。
 */
 class IEventHandler {
 public:
-	virtual ~IEventHandler() = default;
-	virtual int onEvent(Window *, Message, WPARAM, LPARAM) = 0;
+    virtual ~IEventHandler() = default;
+    virtual int onEvent(Window *, Message, WPARAM, LPARAM) = 0;
 };
 
 }  // namespace
