@@ -13,20 +13,20 @@ namespace {
 
 bool inline isValid(MSG *msg)
 {
-	return msg->message != WM_QUIT;
+    return msg->message != WM_QUIT;
 }
 
 bool inline getMessageIfExist(MSG * msg, UINT filter)
 {
-	return isValid(msg)
-		&& PeekMessage(msg, nullptr, filter, filter, PM_REMOVE) != FALSE
-		&& isValid(msg);
+    return isValid(msg)
+        && PeekMessage(msg, nullptr, filter, filter, PM_REMOVE) != FALSE
+        && isValid(msg);
 }
 
 bool inline waitForMessagePosted(MSG * msg, UINT filter)
 {
-	return isValid(msg)
-		&& GetMessage(msg, nullptr, filter, filter) != FALSE;
+    return isValid(msg)
+        && GetMessage(msg, nullptr, filter, filter) != FALSE;
 }
 
 } // namespace
@@ -51,18 +51,18 @@ Window::operator HWND() const { return impl->handle(); }
 
 int Window::run() const
 {
-	MSG msg{};
+    MSG msg{};
 
-	// WM_TIMERÇóDêÊÇµÇƒèàóùÇ∑ÇÈ
-	while (getMessageIfExist(&msg, WM_TIMER)
-		|| waitForMessagePosted(&msg, WM_NULL))
-	{
-		DispatchMessage(&msg);
-	}
+    // WM_TIMERÇóDêÊÇµÇƒèàóùÇ∑ÇÈ
+    while (getMessageIfExist(&msg, WM_TIMER)
+        || waitForMessagePosted(&msg, WM_NULL))
+    {
+        DispatchMessage(&msg);
+    }
 
-	int const exit_code = static_cast<int>(msg.wParam);
+    int const exit_code = static_cast<int>(msg.wParam);
 
-	return exit_code;
+    return exit_code;
 }
 
 
@@ -119,11 +119,11 @@ void Window::post(Message msg, WPARAM wp, LPARAM lp)
 
 HWND Window::addChild(const TCHAR *title, Rect pos, DWORD addStyle)
 {
-	return CreateWindow(TEXT("BUTTON"), title,
-		WS_CHILD | WS_VISIBLE | addStyle,
-		pos.left, pos.top, pos.width(), pos.height(), *this, 0,
-		reinterpret_cast<HINSTANCE>(GetWindowLongPtr(*this, GWLP_HINSTANCE)),
-		nullptr);
+    return CreateWindow(TEXT("BUTTON"), title,
+        WS_CHILD | WS_VISIBLE | addStyle,
+        pos.left, pos.top, pos.width(), pos.height(), *this, 0,
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(*this, GWLP_HINSTANCE)),
+        nullptr);
 }
 
 
@@ -167,10 +167,10 @@ getWindowSize() const
 Rect inline Window::
 getWindowRect() const
 {
-	RECT rc;
-	if (!GetWindowRect(*this, &rc))
-		throw api_runtime_error();
-	return rc;
+    RECT rc;
+    if (!GetWindowRect(*this, &rc))
+        throw api_runtime_error();
+    return rc;
 }
 
 
@@ -179,10 +179,10 @@ getWindowRect() const
 Rect Window::
 getRect() const
 {
-	RECT rc;
-	if (DWM::IsCompositionEnabled() && DWM::GetExtendedRect(this, &rc))
-		return rc;
-	return getWindowRect();
+    RECT rc;
+    if (DWM::IsCompositionEnabled() && DWM::GetExtendedRect(this, &rc))
+        return rc;
+    return getWindowRect();
 }
 
 
@@ -191,7 +191,7 @@ void Window::
 setRect(Rect dest) const
 {
     if (DWM::IsCompositionEnabled())
-    	dest = dest + getWindowRect() - getRect();
+        dest = dest + getWindowRect() - getRect();
 
     if (!setWindowRect(dest, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER))
         throw api_runtime_error();
@@ -202,10 +202,10 @@ setRect(Rect dest) const
 Rect Window::
 getClientRect() const
 {
-	RECT rc{};
-	if (GetClientRect(*this, &rc) == FALSE)
-		throw api_runtime_error();
-	return rc;
+    RECT rc{};
+    if (GetClientRect(*this, &rc) == FALSE)
+        throw api_runtime_error();
+    return rc;
 }
 
 
@@ -213,12 +213,12 @@ getClientRect() const
 Rect Window::
 getClientRectInScreen() const
 {
-	auto rc = getClientRect();
-	LONG right = rc.right, bottom = rc.bottom;
-	ClientToScreen(*this, reinterpret_cast<POINT*>(&rc.right));
-	rc.left += rc.right - right;
-	rc.top += rc.bottom - bottom;
-	return rc;
+    auto rc = getClientRect();
+    LONG right = rc.right, bottom = rc.bottom;
+    ClientToScreen(*this, reinterpret_cast<POINT*>(&rc.right));
+    rc.left += rc.right - right;
+    rc.top += rc.bottom - bottom;
+    return rc;
 }
 
 
@@ -226,7 +226,7 @@ getClientRectInScreen() const
 Size Window::
 getClientSize() const
 {
-	return getClientRect().size();
+    return getClientRect().size();
 }
 
 
@@ -234,10 +234,10 @@ getClientSize() const
 Rect Window::
 place() const
 {
-	WINDOWPLACEMENT wp{ sizeof wp };
-	if (GetWindowPlacement(*this, &wp) == FALSE)
-		throw api_runtime_error();
-	return wp.rcNormalPosition;
+    WINDOWPLACEMENT wp{ sizeof wp };
+    if (GetWindowPlacement(*this, &wp) == FALSE)
+        throw api_runtime_error();
+    return wp.rcNormalPosition;
 }
 
 
@@ -245,12 +245,12 @@ place() const
 bool Window::
 place(const Rect& rc) const
 {
-	WINDOWPLACEMENT wp{ sizeof wp };
-	if (!GetWindowPlacement(*this, &wp))
-		return false;
+    WINDOWPLACEMENT wp{ sizeof wp };
+    if (!GetWindowPlacement(*this, &wp))
+        return false;
 
-	wp.rcNormalPosition = static_cast<RECT>(rc);
-	return 0 != SetWindowPlacement(*this, &wp);
+    wp.rcNormalPosition = static_cast<RECT>(rc);
+    return 0 != SetWindowPlacement(*this, &wp);
 }
 
 
@@ -258,10 +258,10 @@ place(const Rect& rc) const
 bool Window::
 move(Size s) const
 {
-	Rect rc = getWindowRect();
-	rc.left += s.x;
-	rc.top += s.y;
-	return setWindowRect(rc, SWP_NOSIZE | SWP_NOSENDCHANGING);
+    Rect rc = getWindowRect();
+    rc.left += s.x;
+    rc.top += s.y;
+    return setWindowRect(rc, SWP_NOSIZE | SWP_NOSENDCHANGING);
 }
 
 
@@ -269,8 +269,8 @@ move(Size s) const
 bool Window::
 moveTo(Point pt) const
 {
-	auto size = getSize();
-	return MoveWindow(*this, pt.x, pt.y, size.x, size.y, TRUE) != FALSE;
+    auto size = getSize();
+    return MoveWindow(*this, pt.x, pt.y, size.x, size.y, TRUE) != FALSE;
 }
 
 
@@ -278,7 +278,7 @@ moveTo(Point pt) const
 void Window::
 maximize() const
 {
-	ShowWindow(*this, SW_MAXIMIZE);
+    ShowWindow(*this, SW_MAXIMIZE);
 }
 
 
@@ -286,7 +286,7 @@ maximize() const
 void Window::
 minimize() const
 {
-	ShowWindow(*this, SW_MINIMIZE);
+    ShowWindow(*this, SW_MINIMIZE);
 }
 
 
@@ -294,7 +294,7 @@ minimize() const
 void Window::
 normalize() const
 {
-	ShowWindow(*this, SW_RESTORE);
+    ShowWindow(*this, SW_RESTORE);
 }
 
 
@@ -302,7 +302,7 @@ normalize() const
 bool Window::
 isMaximized() const
 {
-	return IsZoomed(*this) != FALSE;
+    return IsZoomed(*this) != FALSE;
 }
 
 
@@ -310,7 +310,7 @@ isMaximized() const
 bool Window::
 isMinimized() const
 { 
-	return IsIconic(*this) != FALSE;
+    return IsIconic(*this) != FALSE;
 }
 
 
@@ -318,9 +318,9 @@ isMinimized() const
 void Window::
 maximize_multi() const
 {
-	maximize();
-	setRect(Monitor::GetVirtualScreen());
-	return;
+    maximize();
+    setRect(Monitor::GetVirtualScreen());
+    return;
 }
 
 
@@ -328,7 +328,7 @@ maximize_multi() const
 LONG Window::
 getStyle() const
 {
-	return GetWindowLong(*this, GWL_STYLE);
+    return GetWindowLong(*this, GWL_STYLE);
 }
 
 
@@ -336,7 +336,7 @@ getStyle() const
 LONG Window::
 setStyle(LONG newStyle) const
 {
-	return SetWindowLong(*this, GWL_STYLE, newStyle);
+    return SetWindowLong(*this, GWL_STYLE, newStyle);
 }
 
 
@@ -344,10 +344,10 @@ setStyle(LONG newStyle) const
 int Window::
 getCaptionHeight() const
 {
-	if ((getStyle() & WS_CAPTION) == 0L)
-		return 0L;
+    if ((getStyle() & WS_CAPTION) == 0L)
+        return 0L;
 
-	return static_cast<int>(GetSystemMetrics(SM_CYCAPTION));
+    return static_cast<int>(GetSystemMetrics(SM_CYCAPTION));
 }
 
 
@@ -355,23 +355,23 @@ getCaptionHeight() const
 void Window::
 popup(bool bPopup) const
 {
-	if (isPopup() == bPopup)
-		return;
+    if (isPopup() == bPopup)
+        return;
 
-	const bool maximized = isMaximized();
+    const bool maximized = isMaximized();
 
-	Rect rc = (maximized) ? getRect() : getClientRectInScreen();
+    Rect rc = (maximized) ? getRect() : getClientRectInScreen();
 
-	if (bPopup) {
-		setStyle((getStyle() &~WS_OVERLAPPEDWINDOW) | WS_POPUP);
-		applyFrame();
-		setRect(rc);
-		return;
-	}
+    if (bPopup) {
+        setStyle((getStyle() &~WS_OVERLAPPEDWINDOW) | WS_POPUP);
+        applyFrame();
+        setRect(rc);
+        return;
+    }
 
-	setStyle((getStyle() &~WS_POPUP) | WS_OVERLAPPEDWINDOW);
-	applyFrame();
-	setRect(maximized ? rc : rc + getRect() - getClientRectInScreen());
+    setStyle((getStyle() &~WS_POPUP) | WS_OVERLAPPEDWINDOW);
+    applyFrame();
+    setRect(maximized ? rc : rc + getRect() - getClientRectInScreen());
 }
 
 
@@ -379,7 +379,7 @@ popup(bool bPopup) const
 bool Window::
 isPopup() const
 {
-	return (getStyle() & WS_POPUP) != 0;
+    return (getStyle() & WS_POPUP) != 0;
 }
 
 
@@ -387,7 +387,7 @@ isPopup() const
 const basis::Window& Window::
 show(int nShow) const
 {
-	ShowWindow(*this, nShow);
+    ShowWindow(*this, nShow);
     return *this;
 }
 
@@ -396,7 +396,7 @@ show(int nShow) const
 const basis::Window& Window::
 hide() const
 {
-	ShowWindow(*this, SW_HIDE);
+    ShowWindow(*this, SW_HIDE);
     return *this;
 }
 
@@ -416,7 +416,7 @@ invalidate(const Rect &rc) const
 {
     RECT rect = rc;
     if (InvalidateRect(*this, &rect, 0) == FALSE)
-		throw api_runtime_error();
+        throw api_runtime_error();
 }
 
 
@@ -424,7 +424,7 @@ invalidate(const Rect &rc) const
 void Window::
 update() const
 {
-	UpdateWindow(*this);
+    UpdateWindow(*this);
 }
 
 
@@ -432,7 +432,7 @@ update() const
 bool Window::
 activate() const
 {
-	return setWindowRect({}, SWP_NOSIZE | SWP_NOMOVE);
+    return setWindowRect({}, SWP_NOSIZE | SWP_NOMOVE);
 }
 
 
@@ -440,7 +440,7 @@ activate() const
 bool Window::
 setForeground() const
 {
-	return SetForegroundWindow(*this) != FALSE;
+    return SetForegroundWindow(*this) != FALSE;
 }
 
 
@@ -448,7 +448,7 @@ setForeground() const
 bool Window::
 setTitle(const TCHAR *p) const
 {
-	return SetWindowText(*this, p) != FALSE;
+    return SetWindowText(*this, p) != FALSE;
 }
 
 
@@ -456,12 +456,12 @@ setTitle(const TCHAR *p) const
 StringBuffer Window::
 getTitle() const
 {
-	auto size = static_cast<int>(DefWindowProc(*this, WM_GETTEXTLENGTH, 0, 0));
+    auto size = static_cast<int>(DefWindowProc(*this, WM_GETTEXTLENGTH, 0, 0));
 
-	StringBuffer buf(size + 1);
-	DefWindowProc(*this, WM_GETTEXT, static_cast<WPARAM>(buf.capacity()),
-		reinterpret_cast<LPARAM>(buf.data()));
-	return buf;
+    StringBuffer buf(size + 1);
+    DefWindowProc(*this, WM_GETTEXT, static_cast<WPARAM>(buf.capacity()),
+        reinterpret_cast<LPARAM>(buf.data()));
+    return buf;
 }
 
 

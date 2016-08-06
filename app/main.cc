@@ -19,8 +19,8 @@
 namespace {
 void CheckLeaks() {
 #ifdef _DEBUG
-	auto i = basis::HeapMemory::TotalAmount();	// Images
-	auto j = basis::CMemory::TotalAmount();		// Others
+    auto i = basis::HeapMemory::TotalAmount();    // Images
+    auto j = basis::CMemory::TotalAmount();        // Others
     if (i || j)
         throw 0;
 #endif
@@ -28,10 +28,10 @@ void CheckLeaks() {
 
 void PerformUnitTest() {
 #ifdef _DEBUG
-	for (auto e = IUnitTest::GetEnumlator(); e.next(); ) {
-		assert(e.get()->test());
-		CheckLeaks();
-	}
+    for (auto e = IUnitTest::GetEnumlator(); e.next(); ) {
+        assert(e.get()->test());
+        CheckLeaks();
+    }
 #endif
 }
 }  // namespace
@@ -40,16 +40,16 @@ void PerformUnitTest() {
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nShow)
 {
-	// Declairation to perform leak-checking when the program ends.
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    // Declairation to perform leak-checking when the program ends.
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	PerformUnitTest();
+    PerformUnitTest();
 
     image_viewer::CImageViewer().create().show(nShow).waitToEnd();
 
-	CheckLeaks();
+    CheckLeaks();
 
-	// Finalizes singleton objects not to be caught by CrtDbg.
-	basis::SingletonFinalizers::Finalize();
-	return 0;
+    // Finalizes singleton objects not to be caught by CrtDbg.
+    basis::SingletonFinalizers::Finalize();
+    return 0;
 }

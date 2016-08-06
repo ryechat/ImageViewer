@@ -3,9 +3,9 @@
 #define STDAFX_H
 
 /*
-	stdafxの名は、MFCで使われた "Application Framework Extensions" から。
-	フレームワークとして扱う追加機能をまとめたものと理解できる。
-	個々のプログラムによって扱いが変わるものは入れてはいけない。
+    stdafxの名は、MFCで使われた "Application Framework Extensions" から。
+    フレームワークとして扱う追加機能をまとめたものと理解できる。
+    個々のプログラムによって扱いが変わるものは入れてはいけない。
 */
 
 #pragma warning(push)
@@ -19,9 +19,9 @@
 #include <Psapi.h>
 
 #ifdef UNICODE
-#include <tchar.h>		// _stprintf_s, TCHAR
+#include <tchar.h>        // _stprintf_s, TCHAR
 #else
-#include <stdio.h>		// sprintf_s
+#include <stdio.h>        // sprintf_s
 #endif
 #pragma warning(pop)
 

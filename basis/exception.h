@@ -11,37 +11,37 @@
 #define LOCATION ::basis::MakeLocation(__func__, __FILE__, __LINE__)
 
 //! APIがエラーのときに投げる例外
-#define api_runtime_error()										\
+#define api_runtime_error()                                        \
 std::runtime_error(::basis::GetErrorMessage(__func__, __FILE__, __LINE__))
 
 namespace basis {
 
 /*! 例外
-	@file
-	std::exceptionの派生クラスを基底クラスとすると、
-	virtual指定がないためにstd::exceptionとしてcatchすることはできない。
-	そのためC++標準の例外クラスのみを使うことにする。
+    @file
+    std::exceptionの派生クラスを基底クラスとすると、
+    virtual指定がないためにstd::exceptionとしてcatchすることはできない。
+    そのためC++標準の例外クラスのみを使うことにする。
 
 
-	例１）送出したい例外クラスにLOCATIONマクロの文字列を渡す
+    例１）送出したい例外クラスにLOCATIONマクロの文字列を渡す
 
-		throw std::invalid_argument(LOCATION);
-
-
-	例２）APIエラーの場合は専用マクロでruntime_error例外を作る。
-		　このとき、GetLastError()の説明文が追加される。
-		
-		throw api_runtime_error();
+        throw std::invalid_argument(LOCATION);
 
 
+    例２）APIエラーの場合は専用マクロでruntime_error例外を作る。
+        　このとき、GetLastError()の説明文が追加される。
+        
+        throw api_runtime_error();
 
-	※考察
-	標準例外はマクロによりファイル名などを含めることができるが、
-	メソッドの引数にわたされたbasic_string<TCHAR>を扱えない。
-	一長一短であるので、ユーザ定義例外クラスを作るときは
-	例外発生場所を知らせるchar型の文字列と、
-	引数やエラー内容を知らせるTCHAR型の文字列を持たせ、
-	MessageBoxA() と MessageBox()の２段階で通知する手もある
+
+
+    ※考察
+    標準例外はマクロによりファイル名などを含めることができるが、
+    メソッドの引数にわたされたbasic_string<TCHAR>を扱えない。
+    一長一短であるので、ユーザ定義例外クラスを作るときは
+    例外発生場所を知らせるchar型の文字列と、
+    引数やエラー内容を知らせるTCHAR型の文字列を持たせ、
+    MessageBoxA() と MessageBox()の２段階で通知する手もある
 */
 
 //! LOCATION マクロの実体

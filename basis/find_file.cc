@@ -4,28 +4,28 @@
 namespace basis {
 
 CFindFile::CFindFile(const TCHAR *path)
-	: fd(new WIN32_FIND_DATA)
+    : fd(new WIN32_FIND_DATA)
 {
-	hf = path ? FindFirstFile(path, fd) : nullptr;
-	if (hf == INVALID_HANDLE_VALUE)
-		hf = nullptr;
-	fd->dwFileAttributes |= kFileAttrFirstFile;
+    hf = path ? FindFirstFile(path, fd) : nullptr;
+    if (hf == INVALID_HANDLE_VALUE)
+        hf = nullptr;
+    fd->dwFileAttributes |= kFileAttrFirstFile;
 }
 
 
 
 CFindFile::~CFindFile()
 {
-	close();
-	delete fd;
+    close();
+    delete fd;
 }
 
 
 
 CFindFile::CFindFile(CFindFile && s) noexcept
-	: fd(0), hf(0)
+    : fd(0), hf(0)
 {
-	*this = std::move(s);
+    *this = std::move(s);
 }
 
 
@@ -33,8 +33,8 @@ CFindFile::CFindFile(CFindFile && s) noexcept
 CFindFile& CFindFile::
 operator=(CFindFile &&s) noexcept
 {
-	std::swap(*this, s);
-	return *this;
+    std::swap(*this, s);
+    return *this;
 }
 
 
@@ -42,15 +42,15 @@ operator=(CFindFile &&s) noexcept
 bool CFindFile::
 next() noexcept
 {
-	// First file was already set.
-	if (fd->dwFileAttributes & kFileAttrFirstFile) {
-		fd->dwFileAttributes &= ~kFileAttrFirstFile;
-	}
-	else {
-		if (hf && FindNextFile(hf, fd) == FALSE)
-			close();
-	}
-	return hf != nullptr;
+    // First file was already set.
+    if (fd->dwFileAttributes & kFileAttrFirstFile) {
+        fd->dwFileAttributes &= ~kFileAttrFirstFile;
+    }
+    else {
+        if (hf && FindNextFile(hf, fd) == FALSE)
+            close();
+    }
+    return hf != nullptr;
 }
 
 
@@ -58,11 +58,11 @@ next() noexcept
 bool CFindFile::
 nextFile() noexcept
 {
-	while (next()) {
-		if (!(get().dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-			return true;
-	}
-	return false;
+    while (next()) {
+        if (!(get().dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+            return true;
+    }
+    return false;
 }
 
 
@@ -70,11 +70,11 @@ nextFile() noexcept
 bool CFindFile::
 nextDirectory() noexcept
 {
-	while (next()) {
-		if (get().dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			return true;
-	}
-	return false;
+    while (next()) {
+        if (get().dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            return true;
+    }
+    return false;
 }
 
 
@@ -82,10 +82,10 @@ nextDirectory() noexcept
 void CFindFile::
 close() noexcept
 {
-	if (hf) {
-		FindClose(hf);
-		hf = nullptr;
-	}
+    if (hf) {
+        FindClose(hf);
+        hf = nullptr;
+    }
 }
 
 

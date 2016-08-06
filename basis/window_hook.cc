@@ -45,7 +45,7 @@ unhook(IEventHandler *p)
 void WindowHook::
 clear()
 {
-	listeners.clear();
+    listeners.clear();
 }
 
 
@@ -54,15 +54,15 @@ int WindowHook::
 dispatch(Window *win, Message msg, WPARAM wp, LPARAM lp) const
 {
     int ret;
-	for (auto &i : listeners) {
+    for (auto &i : listeners) {
         if (i.first)
             ret = i.first->onEvent(win, msg, wp, lp);
         else
             ret = i.second(win, msg, wp, lp);
         if (ret)
             return ret;
-	}
-	return 0;
+    }
+    return 0;
 }
 
 
@@ -70,9 +70,9 @@ dispatch(Window *win, Message msg, WPARAM wp, LPARAM lp) const
 bool WindowHook::
 exist(const IEventHandler *p) const
 {
-	return p && std::any_of(listeners.cbegin(), listeners.cend(),
-		[p](const Element& e) { return (e.first == p); }
-	);
+    return p && std::any_of(listeners.cbegin(), listeners.cend(),
+        [p](const Element& e) { return (e.first == p); }
+    );
 }
 
 }  // namespace

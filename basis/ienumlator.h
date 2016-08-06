@@ -4,15 +4,15 @@
 
 namespace basis {
 
-/*!	Enumlator template class interface.
+/*!    Enumlator template class interface.
 */
 template<typename T>
 class IEnumlator {
 public:
-	virtual T& get() = 0;
-	virtual bool next() = 0;
-	virtual bool empty() const = 0;
-	virtual ~IEnumlator() {}
+    virtual T& get() = 0;
+    virtual bool next() = 0;
+    virtual bool empty() const = 0;
+    virtual ~IEnumlator() {}
 };
 
 }  // namespace
