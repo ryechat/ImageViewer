@@ -55,6 +55,7 @@ onEvent(Window *win, Message msg, WPARAM wp, LPARAM) try
         m_textConfirmDelete =
             profile->getTranslatedString(ID::CONFIRM_DELETE);
         updateTitleBar();
+        setPath(::basis::GetCommandLine(1));
         DragAcceptFiles(*win, true);
         return 0;
 
