@@ -60,7 +60,6 @@ onEvent(Window *win, Message msg, WPARAM wp, LPARAM) try
         return 0;
 
     case WM::PAINT:
-        m_exitCode = 0;
         return onPaint();
 
     case WM::COMMAND:
