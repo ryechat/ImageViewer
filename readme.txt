@@ -1,70 +1,69 @@
-�y�\�t�g���z    Stella Vista
-�y�o�[�W�����z  1.0
-�y���쌠�ҁz    ���C
-�y������z      2016/7/31
-�y��@�ʁz      �t���[�\�t�g�E�F�A
-�y�A����z      moonlit-night@jcom.home.ne.jp
-�y�z�z���z�@�@�@http://members.jcom.home.ne.jp/moonlit-night/works/works.html
-�y�]�ڂ̉ہz�@��
-�y�o �^ ���z�@�@Stella Vista v1.0.exe
-�y������z�@�@Windows XP, Vista�ȍ~
-�y�J�����z�@�@Visual Studio 2015, Windows10
+【ソフト名】    Stella Vista
+【バージョン】  1.0
+【著作権者】    ライ
+【制作日】      2016/7/31
+【種　別】      フリーソフトウェア
+【配布元】　　　github.com/ryechat/ImageViewer
+【転載の可否】　可
+【登 録 名】　　Stella Vista v1.0.exe
+【動作環境】　　Windows XP, Vista以降
+【開発環境】　　Visual Studio 2015, Windows10
 
-�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\�\
-�ᒘ�쌠����іƐӎ�����
+―――――――――――――――――――――――――――――――――――――
+≪著作権および免責事項≫
 
-�@�{�\�t�g�̓t���[�\�t�g�ł��B�l�^�c�́^�Г����p���킸�A�����R�ɂ��g���������B
-�@�\�t�g�E�F�A����у\�[�X�R�[�h�̒��쌠�͍�҂��ۗL���Ă��܂��B
+　本ソフトはフリーソフトです。個人／団体／社内利用を問わず、ご自由にお使い下さい。
+　ソフトウェアおよびソースコードの著作権は作者が保有しています。
 
-�@���̃\�t�g�E�F�A���g�p�������Ƃɂ���Đ��������ׂĂ̏�Q�E���Q�E�s��
-�����Ɋւ��ẮA��҂͈�؂̐ӔC�𕉂��܂���B�e���̐ӔC�ɂ����Ă��g�p���������B
+　このソフトウェアを使用したことによって生じたすべての障害・損害・不具
+合等に関しては、作者は一切の責任を負いません。各自の責任においてご使用ください。
 
 
-���͂��߂�
-  Stella Vista�́A�摜�t�@�C�����{���ł���Windows��p�\�t�g�E�F�A�ł��B
-  exe�t�@�C���N����̃E�B���h�E�ɁA�摜�t�@�C�����h���b�v����ƕ\�����܂��B
-  �}�E�X��L�[�{�[�h���g���āA����t�H���_�ɂ��邷�ׂẴt�@�C�����{�����邱�Ƃ��ł��܂��B
+●はじめに
+  Stella Vistaは、画像ファイルを閲覧できるWindows専用ソフトウェアです。
+  exeファイル起動後のウィンドウに、画像ファイルをドロップすると表示します。
+  マウスやキーボードを使って、同一フォルダにあるすべてのファイルを閲覧することができます。
 
-���Ή��摜�`��
+●対応画像形式
   BMP, ICO, GIF, JPEG, Exif, PNG, TIFF, WMF, EMF.
 
-����ȓ���
-  1)�V���v���ŕ�����Ղ��C���^�[�t�F�[�X
-  2)�}���`�X���b�h�ɑΉ����������ȉ摜�W�J
-  3)�}���`���j�^���ɑΉ�
+●主な特長
+  1)シンプルで分かり易いインターフェース
+  2)マルチスレッドに対応した高速な画像展開
+  3)マルチモニタ環境に対応
 
-���C���X�g�[��
-�@�z�z���T�C�g��舳�k�t�@�C�����_�E�����[�h�A
-�@�p�X�̒ʂ����C�ӂ̈ʒu�œW�J���܂��B
-�@exe�t�@�C�����_�u���N���b�N����ƃA�v���P�[�V�������N�����܂��B
+●インストール
+　配布元サイトより圧縮ファイルをダウンロード、
+　パスの通った任意の位置で展開します。
+　exeファイルをダブルクリックするとアプリケーションが起動します。
 
-�@���̍ہA�A�v���P�[�V�����̃_�E�����[�h�������Ȃ����߁A
-�@�댯�ȃt�@�C���Ƃ���Windows SmartScreen�����s���u���b�N����ꍇ������܂��B
-�@�ڍ׏����N���b�N���A�\�����ꂽ���s�{�^�����N���b�N���邱�Ƃŉ���ł��܂��B
+　この際、アプリケーションのダウンロード数が少ないため、
+　危険なファイルとしてWindows SmartScreenが実行をブロックする場合があります。
+　詳細情報をクリックし、表示された実行ボタンをクリックすることで回避できます。
 
-���A���C���X�g�[��
-  �W�J�����t�@�C�������ׂč폜���܂��B
-  ���W�X�g���͎g�p���Ă��܂���B
+●アンインストール
+  展開したファイルをすべて削除します。
+  レジストリは使用していません。
 
-���\�[�X�R�[�h
-�@Stella Vista�̓I�[�v���\�[�X�\�t�g�E�F�A�ł��B
-�@�ȉ��̃T�C�g����\�[�X�R�[�h���_�E�����[�h�ł��܂��B
-�@https://github.com/ryechat/ImageViewer
+●ソースコード
+　Stella Vistaはオープンソースソフトウェアです。
+　以下のサイトからソースコードをダウンロードできます。
+　https://github.com/ryechat/ImageViewer
 
-�����|�W�g���\��
-�@setting.ini     (�ݒ�t�@�C��)
-�@language.ini    (����t�@�C��)
-�@readme.txt�@�@�@(���̐����t�@�C��)
-�@basis           (���C�u����)
-�@app             (�\�[�X�R�[�h)
-�@stdafx.h/.cc    (�v���R���p�C���ς݃w�b�_�p�\�[�X�t�@�C��)
+●レポジトリ構成
+　setting.ini     (設定ファイル)
+　language.ini    (言語ファイル)
+　readme.txt　　　(この説明ファイル)
+　basis           (ライブラリ)
+　app             (ソースコード)
+　stdafx.h/.cc    (プリコンパイル済みヘッダ用ソースファイル)
 
-���v���W�F�N�g�̃r���h
-  �\�[�X�R�[�h�́Aapp ����� basis �t�H���_�Ɋ܂܂�Ă��܂��B
+●プロジェクトのビルド
+  ソースコードは、app および basis フォルダに含まれています。
  
-  �r���h����ɂ́A����炷�ׂĂ�.cc�t�@�C�����R���p�C���A�����N���܂��B
-�@���̍ہAbasis�t�H���_��ǉ��̃C���N���[�h�f�B���N�g���Ɏw�肷��K�v������܂��B
+  ビルドするには、これらすべての.ccファイルをコンパイル、リンクします。
+　その際、basisフォルダを追加のインクルードディレクトリに指定する必要があります。
  
-  �K�������v���R���p�C���ς݃w�b�_�͕K�v�ł͂���܂���B
+  必ずしもプリコンパイル済みヘッダは必要ではありません。
 
---�ȏ�--
+--以上--
